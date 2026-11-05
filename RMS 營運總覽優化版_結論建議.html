@@ -125,6 +125,29 @@ html{scroll-behavior:smooth}*{box-sizing:border-box}button,a,input,select,textar
 .kgrid .k{min-width:0}@media(min-width:760px){.kgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .overview-region-list{margin-top:10px}.overview-region{padding:0 12px}.overview-region .overview-ranks{padding-bottom:12px}.overview-region>summary{min-height:46px}.overview-region>summary b{font-size:14px}
 
+/* Mobile sizing pass: Material 3 inspired spacing, readable type, and touch targets */
+@media(max-width:759px){
+  body{font-size:14px;line-height:1.5}
+  .gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .titlebar{min-height:56px}
+  .ib{width:48px;height:48px}
+  .cond{min-height:56px;padding:10px 16px;gap:4px 12px}
+  .cond .d{font-size:14px;line-height:20px}
+  .cond .t{font-size:12px;line-height:18px}
+  .sync{min-height:48px;padding:12px 16px;gap:8px;font-size:12px}
+  main{gap:12px;padding:0 12px 96px}
+  .card{padding:16px;border-radius:16px}
+  .ch{gap:12px;margin-bottom:12px}
+  .ch h2{font-size:16px;line-height:24px}
+  .ch p{font-size:12px;line-height:18px}
+  .more{width:48px;height:48px;margin:-8px -8px 0 0}
+  .chip{min-height:40px}
+  .go{margin:12px -16px -16px}
+  .go a,.go button{min-height:48px}
+  .overview-region>summary{min-height:48px}
+  .rms-panel{max-height:92dvh;border-radius:20px 20px 0 0}
+  .rms-panel button,.rms-panel a{min-height:48px}
+}
 </style>
 
 <div class="top">
