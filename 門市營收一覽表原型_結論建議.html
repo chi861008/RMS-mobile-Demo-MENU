@@ -1,0 +1,457 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>門市營收一覽表・結論建議版</title><meta name="rms-conclusions-version" content="1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: RMS shell (app bar, grey title bar) over one report column; desktop shows the query form and settings inline, under 760px they move into bottom sheets and the condition summary pins to the top */
+:root{
+  --bg:#FFFFFF; --page:#F5F5F4; --surface:#FFFFFF; --band:#DADADA; --title:#616161; --title-fg:#FFFFFF;
+  --line:#E2E2E0; --stripe:#F2F2F1; --fg:#222222; --muted:#666666; --hint:#8A8A8A;
+  --orange:#F7B36A; --orange-ink:#8A4B00; --orange-soft:#FFF1E0; --teal:#2AA198; --red:#D9452B; --pos:#1F7A4A;
+  --mark:#FFF1C2; --mark-line:#E0B43A; --scrim:rgba(20,20,20,.45); --toast:#222; --toast-fg:#fff;
+  --font:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141414; --page:#1B1B1B; --surface:#1F1F1F; --band:#2E2E2E; --title:#3A3A3A; --title-fg:#F2F2F2;
+  --line:#353535; --stripe:#262626; --fg:#EDEDED; --muted:#AAAAAA; --hint:#8E8E8E;
+  --orange:#E59A45; --orange-ink:#FFD2A1; --orange-soft:#3A2A17; --teal:#4CC2B8; --red:#F07A62; --pos:#5CC78E;
+  --mark:#3A3218; --mark-line:#B8902A; --scrim:rgba(0,0,0,.6); --toast:#EDEDED; --toast-fg:#141414; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141414; --page:#1B1B1B; --surface:#1F1F1F; --band:#2E2E2E; --title:#3A3A3A; --title-fg:#F2F2F2;
+  --line:#353535; --stripe:#262626; --fg:#EDEDED; --muted:#AAAAAA; --hint:#8E8E8E;
+  --orange:#E59A45; --orange-ink:#FFD2A1; --orange-soft:#3A2A17; --teal:#4CC2B8; --red:#F07A62; --pos:#5CC78E;
+  --mark:#3A3218; --mark-line:#B8902A; --scrim:rgba(0,0,0,.6); --toast:#EDEDED; --toast-fg:#141414; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;font-variant-numeric:tabular-nums}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.gut{padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;border-bottom:1px solid var(--line);background:var(--bg)}
+.appbar .brand{font-size:20px;display:flex;align-items:center;gap:14px}
+.appbar .who{display:flex;gap:20px;color:var(--muted);font-size:14px}
+.titlebar{background:var(--title);color:var(--title-fg);display:flex;align-items:center;justify-content:space-between;gap:8px;padding-block:6px}
+.titlebar h1{font-size:19px;font-weight:500;margin:0;text-align:center;flex:1}
+.titlebar .side{width:110px;display:flex;align-items:center}
+.titlebar .side.r{justify-content:flex-end;font-size:14px;opacity:.9}
+.ib{width:44px;height:44px;border:0;background:none;display:inline-flex;align-items:center;justify-content:center;color:inherit;border-radius:8px}
+.ib svg{width:22px;height:22px}
+.band{background:var(--band);display:flex;align-items:center;justify-content:space-between;padding-block:8px;font-size:15px}
+.stickyq{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-block:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:16px;background:var(--orange-soft);color:var(--orange-ink);font-size:13px}
+.summary .edit{margin-left:auto;min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.qform{padding-block:16px;display:flex;flex-direction:column;gap:16px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{min-height:40px;padding:0 22px;border:0;border-right:1px solid var(--line);background:none}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--orange);color:#3A1E00}
+.frow{display:flex;flex-wrap:wrap;align-items:center;gap:14px 32px}
+.field{display:flex;align-items:center;gap:10px;min-width:0}
+.field>label,.field>.fl{color:var(--muted);white-space:nowrap}
+.under{border:0;border-bottom:1px solid var(--muted);background:none;min-height:40px;padding:0 4px;min-width:200px}
+.radio{display:inline-flex;align-items:center;gap:6px;min-height:40px}
+.radio input{accent-color:var(--teal);width:18px;height:18px}
+.btn{min-height:44px;padding:0 18px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.btn.primary{color:var(--red)}
+.btn.solid{background:var(--orange);border-color:var(--orange);color:#3A1E00;font-weight:700}
+.settings{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px;padding-block:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding-block:16px 4px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}
+.kpi .k{font-size:12.5px;color:var(--muted)} .kpi .v{font-size:22px;font-weight:700;margin-top:4px} .kpi .d{font-size:12.5px;margin-top:2px}
+.pos{color:var(--pos)} .neg{color:var(--red)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding-block:12px}
+.search{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--muted);min-height:40px;min-width:220px;flex:0 1 280px}
+.search input{border:0;background:none;outline:none;flex:1;min-width:0;min-height:38px}
+.search svg{width:20px;height:20px;color:var(--muted)}
+.toolbar .sp{flex:1}
+.tbox{overflow:auto;border-top:1px solid var(--line);max-height:640px}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
+th{position:sticky;top:0;z-index:2;background:var(--surface);color:var(--muted);font-weight:500;padding:12px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+th button:focus-visible{outline:2px solid var(--orange)}
+td{padding:12px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line);background:var(--surface)}
+tbody tr.alt td{background:var(--stripe)}
+th.name,td.name{text-align:left;position:sticky;left:0;z-index:1;box-shadow:1px 0 0 var(--line)}
+th.name{z-index:3}
+td.code,th.code{text-align:left;color:var(--muted)}
+tr.total td{color:var(--muted);font-weight:500}
+tr.grp td{background:var(--page);color:var(--orange-ink);font-weight:700;font-size:13px;padding:8px 10px;text-align:left}
+tr.grp td.name{background:var(--page)}
+.pager{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-block:12px;color:var(--muted)}
+.pager .pg{display:flex;gap:4px}
+.pager .pg button{min-width:40px;min-height:40px;border:0;background:none;border-radius:6px}
+.pager .pg button[aria-current="page"]{color:var(--red);font-weight:700}
+.more{width:100%;min-height:48px;border:1px solid var(--line);border-radius:8px;background:var(--surface);margin-block:12px}
+.chart{padding-block:12px;display:flex;flex-direction:column;gap:10px}
+.cbar{display:grid;grid-template-columns:120px minmax(0,1fr) 72px;gap:10px;align-items:center;font-size:13.5px}
+.cbar .tr{display:flex;align-items:center;gap:8px;min-width:0}
+.cbar .tr i{display:block;height:14px;border-radius:7px;background:var(--orange);flex:none}
+.cbar .tr span{font-size:12.5px;white-space:nowrap}
+.cbar .dl{text-align:right;font-size:12.5px}
+.ghead{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--orange-ink);padding-top:8px;border-top:1px solid var(--line)}
+.ghead:first-child{border-top:0;padding-top:0}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{min-height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--line);background:var(--surface);font-size:13px;color:var(--muted)}
+.pill[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#3A1E00}
+.foot{color:var(--hint);font-size:12px;padding-block:8px 40px}
+.overlay{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.dialog{width:100%;max-width:520px;max-height:90vh;overflow-y:auto;background:var(--surface);border-radius:14px;padding:18px 20px 22px}
+.dialog h2{font-size:18px;margin:0}
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lbl{font-size:13px;color:var(--muted);margin-top:16px;display:block}
+.opts{display:grid;gap:8px;margin-top:8px}
+.opt{min-height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.opt[aria-pressed="true"]{border:1.5px solid var(--orange);background:var(--orange-soft);color:var(--orange-ink);font-weight:700}
+.colgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px;margin-top:8px}
+.ck{display:flex;align-items:center;gap:8px;min-height:40px}
+.ck input{width:18px;height:18px;accent-color:var(--orange)}
+.sharecard{margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sharecard .hd{background:var(--title);color:var(--title-fg);padding:12px 14px}
+.sharecard .hd b{display:block;font-size:16px}
+.sharecard .hd p{margin:4px 0 0;font-size:12px;opacity:.9}
+.sharecard .bd{padding:10px 14px 12px}
+.mini{width:100%;font-size:12.5px;border-collapse:collapse}
+.mini th,.mini td{position:static;box-shadow:none;padding:6px 4px;background:none;border-bottom:1px solid var(--line)}
+.mini tr.on td{background:var(--mark);font-weight:700}
+.mini td button{all:unset;cursor:pointer}
+.note{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--mark);border:1px solid var(--mark-line);font-size:13px;white-space:pre-wrap;word-break:break-word}
+textarea{width:100%;box-sizing:border-box;min-height:64px;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--surface);margin-top:6px;resize:vertical}
+.acts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.act{min-height:56px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:13px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(28px + env(safe-area-inset-bottom,0px));width:min(420px, calc(100% - 32px));background:var(--toast);color:var(--toast-fg);border-radius:10px;padding:12px 14px;font-size:13.5px;text-align:center;z-index:30}
+.hint{font-size:12px;color:var(--hint)}
+/* ---------- phone ---------- */
+@media (max-width:759px){
+  .appbar .who,.titlebar .side.r span{display:none}
+  .appbar .brand{font-size:17px}
+  .titlebar h1{font-size:17px}
+  .titlebar .side{width:44px}
+  .summary{flex-wrap:nowrap;padding-block:8px}
+  .summary .chips{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+  .summary .chip{white-space:nowrap;min-height:30px;font-size:12.5px}
+  .summary .edit{margin-left:0;flex:none}
+  .overlay{align-items:flex-end;padding:0}
+  .dialog{border-radius:16px 16px 0 0;max-width:none;max-height:92vh;padding-bottom:max(22px, calc(env(safe-area-inset-bottom,0px) + 16px))}
+  .frow{flex-direction:column;align-items:stretch;gap:12px}
+  .field{flex-direction:column;align-items:stretch;gap:4px}
+  .under{min-width:0;width:100%}
+  .seg{display:flex}.seg button{flex:1;padding:0 8px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .kpi .v{font-size:18px}
+  .search{flex:1 1 100%}
+  .toolbar .sp{display:none}
+  .tbox{max-height:none}
+  table{font-size:13px}
+  th,td{padding:10px 8px}
+  .cbar{grid-template-columns:84px minmax(0,1fr) 52px;gap:8px;font-size:13px}
+  .colgrid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion: no-preference){.dialog{animation:pop .2s ease-out}@keyframes pop{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}}
+html{scroll-behavior:smooth}*{box-sizing:border-box}button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}section,[id^="h-"]{scroll-margin-top:150px}.rms-icon{width:22px;height:22px;vertical-align:middle}.rms-overlay{position:fixed;inset:0;z-index:80;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}.rms-panel{background:var(--surface);color:var(--fg);width:min(100%,560px);max-height:94dvh;overflow:auto;border-radius:20px 20px 0 0;padding:20px max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom))}.rms-head{display:flex;align-items:center;gap:12px;justify-content:space-between}.rms-head h2{margin:0;font-size:19px}.rms-close{border:0;background:var(--sunk,var(--stripe));border-radius:50%;width:40px;height:40px;display:grid;place-items:center;flex:none;color:inherit}.rms-muted{color:var(--muted);font-size:13px;line-height:1.6}.rms-share-info{display:flex;gap:12px;padding:16px 0;margin-bottom:4px;align-items:center}.rms-share-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:12px;background:var(--orange-soft);color:var(--orange-ink);flex:none}.rms-share-info strong{display:block;font-size:16px}.rms-share-info p{margin:3px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}.rms-targets{display:grid;grid-template-columns:1fr 1fr;gap:10px}.rms-target{min-height:58px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px;color:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px}.rms-target.line{grid-column:1/-1;background:#06a54b;border-color:#06a54b;color:white;font-size:16px;min-height:60px}.rms-line-badge{border-radius:8px;background:white;color:#07863f;padding:3px 6px;font-size:11px;font-weight:700}.rms-preview{margin-top:20px;border-top:1px solid var(--line);padding-top:10px}.rms-preview summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;font-size:14px;color:var(--orange-ink);font-weight:700}.rms-preview summary::after{content:'⌄';font-size:19px}.rms-imagecard{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:8px}.rms-imagehead{background:var(--title);color:var(--title-fg);padding:14px 16px;font-size:12px;line-height:1.6}.rms-imagehead strong{display:block;font-size:16px}.rms-imagebody{padding:16px;overflow:hidden;pointer-events:none}.rms-imagebody .rms-share-hide,.rms-imagebody button,.rms-imagebody select{display:none!important}.rms-imagebody .gut{padding-left:0;padding-right:0}.rms-imagebody .card{border:0;padding:0}.rms-imagebody .go{display:none}.rms-imagebody table{font-size:11px}.rms-imagebody svg{width:100%;height:auto}.rms-image-note{padding:10px 12px;margin:0 14px 14px;background:var(--orange-soft);font-size:13px;white-space:pre-wrap}.rms-preview label{display:block;font-size:13px;margin-top:14px}.rms-preview textarea{width:100%;margin-top:6px;min-height:68px;font:inherit;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--surface);color:inherit}.rms-downloads{margin-top:12px;display:flex;gap:8px}.rms-downloads button{flex:1;min-height:42px;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px}.rms-toast{position:fixed;z-index:100;bottom:32px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);background:var(--toast);color:var(--toast-fg);padding:12px 16px;border-radius:12px;font-size:13px;text-align:center}.rms-drawer-wrap{justify-content:flex-start;align-items:stretch}.rms-drawer{width:min(340px,88vw);height:100dvh;background:var(--surface);padding:20px;overflow:auto;box-shadow:8px 0 40px #0002}.rms-drawer input{margin:18px 0 12px;width:100%;min-height:44px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:0 12px;color:inherit;font:inherit}.rms-navlink{display:block;padding:14px 12px;text-decoration:none;color:var(--fg);border-radius:10px;margin-bottom:4px;border:1px solid transparent;font-size:15px}.rms-navlink small{display:block;font-size:12px;color:var(--muted);margin-top:3px}.rms-navlink:hover,.rms-navlink[aria-current="page"]{background:var(--orange-soft);border-color:var(--orange);color:var(--orange-ink)}.rms-ai{position:fixed;inset:0;z-index:80;background:var(--bg);height:100dvh;display:flex;flex-direction:column;color:var(--fg)}.rms-ai-header{flex:none;min-height:66px;border-bottom:1px solid var(--line);padding:12px max(18px,calc((100vw - 800px)/2));display:flex;align-items:center;gap:12px;background:var(--surface)}.rms-ai-header strong{display:block;font-size:17px}.rms-ai-header small{display:block;font-size:11px;color:var(--muted);margin-top:2px}.rms-ai-label{font-size:12px;font-weight:700;border-radius:8px;background:var(--orange-soft);color:var(--orange-ink);padding:9px}.rms-ai-thread{flex:1;overflow:auto;padding:30px max(18px,calc((100vw - 760px)/2));min-height:0}.rms-ai-welcome{padding:42px 0 24px}.rms-ai-welcome h2{font-size:25px;line-height:1.4;margin:0 0 10px}.rms-ai-suggestions{display:flex;gap:10px;flex-direction:column;align-items:flex-start;margin-top:22px}.rms-ai-suggestions button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:inherit;text-align:left;min-height:46px}.rms-message{padding:14px 16px;border-radius:16px;margin:14px 0;line-height:1.8;font-size:14px;white-space:pre-wrap}.rms-message.user{margin-left:15%;background:var(--orange-soft);color:var(--orange-ink)}.rms-message.assistant{background:var(--surface);border:1px solid var(--line);margin-right:5%}.rms-ai-compose{padding:12px max(18px,calc((100vw - 760px)/2)) max(18px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surface)}.rms-ai-compose form{display:flex;gap:10px;align-items:center}.rms-ai-compose textarea{flex:1;resize:none;height:52px;min-height:52px;max-height:120px;font:inherit;padding:14px;border:1px solid var(--line);border-radius:14px;margin:0;color:inherit;background:var(--bg)}.rms-ai-compose button{width:48px;height:48px;border:0;background:var(--orange);color:#3a1e00;border-radius:12px;font:inherit;font-size:20px}.rms-ai-compose p{margin:8px 0 0;font-size:11px;color:var(--muted);text-align:center}.rms-linechart{width:100%;height:auto;display:block;overflow:visible}.rms-legend{display:flex;gap:16px;justify-content:center;align-items:center;font-size:11px;color:var(--muted);margin-top:8px}.rms-legend i{display:inline-block;width:20px;border-top:3px solid var(--orange);margin-right:5px;vertical-align:middle}.rms-legend .previous{border-color:#969696;border-top-style:dashed}.rms-fab{position:fixed;bottom:20px;right:18px;width:48px;height:48px;border:0;background:var(--title);color:var(--title-fg);font-weight:700;border-radius:50%;box-shadow:0 5px 18px #0003;z-index:9}.rms-insight{border-left:3px solid var(--orange);background:var(--orange-soft);color:var(--orange-ink);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;line-height:1.6}.rms-panel button:focus-visible,.rms-drawer a:focus-visible,.rms-ai button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}@media(min-width:760px){.rms-overlay:not(.rms-drawer-wrap){align-items:center;padding:24px}.rms-panel{border-radius:20px;max-height:90dvh}.rms-ai-thread{padding-top:40px}}
+.rms-fab{transition:transform .2s,opacity .2s}.rms-fab.hide{transform:translateY(90px);opacity:0;pointer-events:none}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.rms-fab{transition:none}}
+
+.titlebar{position:sticky;top:0;z-index:8;min-height:54px;padding-top:0;padding-bottom:0}.titlebar .side{width:88px}.titlebar .side.r{width:44px}.titlebar h1{font-weight:700}.titlebar a{color:inherit;text-decoration:none}.mobile-nav{display:none}.stickyq{top:54px;border-bottom-color:var(--orange);background:var(--orange-soft)}.summary{flex-wrap:nowrap;align-items:center;min-height:64px;gap:8px}.report-conditions{flex:1;min-width:0;color:var(--orange-ink)}.report-conditions strong{display:block;font-size:12px;line-height:1.6}.report-conditions span{display:block;font-size:11px;line-height:1.6}.summary .edit{font-size:12px;white-space:nowrap;background:transparent;border-color:var(--orange);padding:0 9px;min-height:36px}.report-main{padding-bottom:80px;background:var(--page);min-height:80vh}.report-summary{padding-top:20px;padding-bottom:16px;background:var(--surface);border-bottom:1px solid var(--line)}.report-total{display:flex;justify-content:space-between;align-items:center;gap:12px}.report-total h2{font-size:13px;font-weight:500;margin:5px 0 3px;color:var(--muted)}.report-total strong{font-size:32px;line-height:1.25;letter-spacing:-.6px}.report-change{font-size:16px;font-weight:700;text-align:right}.report-change small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:4px}.summary-metrics{display:grid;grid-template-columns:repeat(3,1fr);margin-top:16px;padding-top:12px;border-top:1px solid var(--line);gap:10px}.summary-metrics span{display:block;font-size:11px;color:var(--muted)}.summary-metrics b{display:block;font-size:17px;margin-top:5px}.report-controls{display:flex;flex-direction:column;gap:12px;padding-top:16px;padding-bottom:16px;background:var(--surface)}.report-viewrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:10px}.report-viewrow .metric-label select{flex:1;min-width:0}.report-viewrow .btn{grid-column:2;font-size:12px;min-height:40px;padding:0 12px}.metric-label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);min-width:0}.metric-label select,.trend-store select{min-height:40px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 10px;color:var(--fg);max-width:100%;font:inherit}.report-controls .seg{display:flex;width:100%;border-radius:8px}.report-controls .seg button{flex:1;min-height:40px;padding:0 5px;font-size:12px}.report-controls .search{min-width:0;flex:initial;width:100%;border:1px solid var(--line);border-radius:8px;min-height:40px;padding:0 10px}.report-controls .search input{font-size:13px}.report-controls .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.report-chart{margin-top:12px;padding-top:16px;padding-bottom:18px;background:var(--surface)}.report-chart-heading{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px}.report-chart-heading h2{font-size:16px;margin:0}.report-chart-heading p{font-size:11px;color:var(--muted);margin:5px 0 0}.report-ranks{display:flex;flex-direction:column;gap:18px;margin-top:20px}.rank-title{display:flex;align-items:baseline;gap:8px;font-size:13px}.rank-title>span{color:var(--muted);font-size:11px;min-width:16px}.rank-title strong{font-weight:500;flex:1;overflow-wrap:anywhere}.rank-title b{font-size:13px;white-space:nowrap}.rank-track{margin:8px 0 4px;background:var(--stripe);height:10px;border-radius:6px;overflow:hidden;position:relative}.rank-track i{display:block;height:100%;border-radius:6px;position:absolute}.rank-track.diverging:after{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:1px solid var(--muted)}.rank-sub{font-size:11px;text-align:right}.rank-sub span{color:var(--muted)}.region-group,.overview-region{border-top:1px solid var(--line)}.region-group>summary,.overview-region>summary{display:flex;align-items:center;gap:10px;min-height:48px;cursor:pointer;list-style:none}.region-group>summary::-webkit-details-marker,.overview-region>summary::-webkit-details-marker{display:none}.region-group>summary:before,.overview-region>summary:before{content:'›';font-size:20px;color:var(--muted);transition:transform .16s}.region-group[open]>summary:before,.overview-region[open]>summary:before{transform:rotate(90deg)}.region-group>summary strong,.overview-region>summary strong{flex:1}.region-group>summary span,.overview-region>summary span{color:var(--muted);font-size:12px}.region-group>summary b,.overview-region>summary b{white-space:nowrap}.region-group-body{padding:8px 0 16px}.region-group-body .report-rank{margin-bottom:16px}.card-list{display:grid;gap:10px}.store-card,.region-total-card{padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.store-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.store-card-head strong{font-size:14px}.store-card-total{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin-top:10px}.store-card-total span,.store-card-metrics span,.region-total-card span{font-size:11px;color:var(--muted)}.store-card-total b,.region-total-card strong{font-size:20px}.store-card-total small{grid-column:1/-1;font-size:11px}.store-card-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid var(--line);margin-top:12px;padding-top:10px}.store-card-metrics b{display:block;font-size:14px;margin-top:4px}.region-total-card{display:grid;gap:5px}.region-total-card small{color:var(--muted)}.trend-store{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px}.trend-store select{flex:1;min-width:0}.trend-readout{display:flex;align-items:baseline;gap:10px;padding-top:20px;padding-bottom:16px;flex-wrap:wrap}.trend-readout>span:first-child{color:var(--muted);font-size:13px}.trend-readout strong{font-size:23px}.trend-disclaimer{font-size:11px;color:var(--hint);margin:18px 0 0;line-height:1.6}.empty-result{text-align:center;font-size:14px;color:var(--muted);padding-top:30px}.report-main .foot{margin:0;padding-top:18px;padding-bottom:0}.dialog{box-sizing:border-box}body:has(.overlay){overflow:hidden}.hint{line-height:1.5}@media(max-width:759px){.appbar{display:none}.mobile-nav{display:inline-flex}.titlebar h1{font-size:16px}.report-total strong{font-size:30px}.dialog .field .under{width:100%}.dialog .qform{gap:12px}}@media(min-width:760px){.report-main{padding-left:max(0px,calc((100vw - 1040px)/2));padding-right:max(0px,calc((100vw - 1040px)/2))}.report-summary{padding-top:26px;padding-bottom:24px}.summary-metrics{max-width:620px}.report-total strong{font-size:40px}.report-controls{display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:24px}.report-controls .search{grid-column:1/-1;max-width:400px}.report-viewrow{min-width:280px}.report-chart{border:1px solid var(--line);border-radius:12px}.report-ranks{display:flex;flex-direction:column}.card-list{grid-template-columns:repeat(2,minmax(0,1fr))}.report-chart .rms-linechart{max-height:360px}.summary{max-width:1040px;margin:auto}.report-chart-heading{margin-bottom:20px}.titlebar .side.r{width:88px}}
+
+</style>
+
+<div id="root"></div>
+<div id="layer"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icon=(paths)=>`<svg class="rms-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+const icons={menu:icon('<path d="M4 7h16M4 12h16M4 17h16"/>'),close:icon('<path d="M6 6l12 12M18 6L6 18"/>'),share:icon('<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8 11l8-5M8 13l8 5"/>')};
+const layer=document.createElement('div');layer.id='rms-global-layer';document.body.append(layer);
+let cfg={},focusBefore=null,overflowBefore='',shareData=null;
+function notify(message){document.getElementById('rms-notice')?.remove();const n=document.createElement('div');n.className='rms-toast';n.id='rms-notice';n.setAttribute('role','status');n.textContent=message;document.body.append(n);setTimeout(()=>n.remove(),3400)}
+function close(){layer.innerHTML='';document.body.style.overflow=overflowBefore;focusBefore?.focus?.();focusBefore=null}
+function show(html){if(!layer.innerHTML){focusBefore=document.activeElement;overflowBefore=document.body.style.overflow}document.body.style.overflow='hidden';layer.innerHTML=html;setTimeout(()=>layer.querySelector('button,input,textarea,a')?.focus(),20)}
+const x=()=>`<button class="rms-close" data-rms="close" aria-label="關閉">${icons.close}</button>`;
+const context=()=>cfg.context?cfg.context():{title:'營運總覽',conditions:'示意資料',summary:'目前資料為操作原型示意。'};
+function drawer(){const c=context(),dash=cfg.dashboardHref,report=typeof cfg.reportHref==='function'?cfg.reportHref():cfg.reportHref;const items=[['營運總覽',dash,'總計、排名與趨勢','dashboard'],['門市營收一覽表',report,'各店比較、逐日趨勢與表格','report'],['時段分析',dash+'#h-h','營運總覽區塊','hours'],['用餐方式分析',dash+'#h-d','營運總覽區塊','dine'],['會員銷售',dash+'#h-m','營運總覽區塊','member'],['商品銷售',dash+'#h-p','營運總覽區塊','products']];show(`<div class="rms-overlay rms-drawer-wrap" data-rms="scrim"><aside class="rms-drawer" role="dialog" aria-modal="true" aria-label="報表切換"><div class="rms-head"><h2>報表切換</h2>${x()}</div><p class="rms-muted">${E(c.conditions)}</p><input id="rms-nav-search" aria-label="搜尋報表" placeholder="搜尋報表"><nav aria-label="報表">${items.map(([name,url,sub,key])=>`<a class="rms-navlink" href="${E(url)}" data-rms="navigate" ${cfg.page===key?'aria-current="page"':''}>${name}<small>${sub}</small></a>`).join('')}</nav></aside></div>`)}
+function ai(){const c=context();show(`<section class="rms-ai" role="dialog" aria-modal="true" aria-label="營運 AI 助理"><header class="rms-ai-header"><span class="rms-ai-label">AI</span><div style="flex:1"><strong>營運 AI 助理</strong><small>${E(c.title)} · ${E(c.conditions)}</small></div>${x()}</header><div class="rms-ai-thread" id="rms-ai-thread" aria-live="polite"><div class="rms-ai-welcome"><h2>想先了解哪個營運重點？</h2><p class="rms-muted">依目前查看的報表與條件，協助整理重點。</p><div class="rms-ai-suggestions">${['目前營業狀況如何？','哪些門市需要留意？','幫我整理一段可分享的重點'].map(s=>`<button data-rms="prompt" data-value="${E(s)}">${s} ↗</button>`).join('')}</div></div></div><div class="rms-ai-compose"><form id="rms-ai-form"><textarea id="rms-ai-input" aria-label="向 AI 提問" placeholder="詢問目前的營運結果…" rows="1" maxlength="500"></textarea><button aria-label="送出問題" type="submit">↑</button></form><p>AI 回覆為原型示意，僅使用畫面中的示意資料。</p></div></section>`)}
+function answer(question){const q=question.trim();if(!q)return;const thread=document.getElementById('rms-ai-thread');thread.querySelector('.rms-ai-welcome')?.remove();const c=context();const response=q.includes('分享')?`可分享的重點\n${c.summary}\n\n資料範圍：${c.conditions}。建議分享時一併保留日期、門市與比較期間。`:q.includes('留意')?`${c.summary}\n\n建議先看門市排名與較前期變化，找到差異後，再切換逐日趨勢；零營收門市需另行確認是否營業。`:`${c.summary}\n\n先以總計判斷整體狀況，再用排名比較門市、以折線確認時間變化。以上為目前報表的示意解讀。`;thread.insertAdjacentHTML('beforeend',`<div class="rms-message user">${E(q)}</div><div class="rms-message assistant">${E(response)}</div>`);document.getElementById('rms-ai-input').value='';thread.scrollTop=thread.scrollHeight}
+function share(data){shareData=data;const c=context();show(`<div class="rms-overlay" data-rms="scrim"><section class="rms-panel" role="dialog" aria-modal="true" aria-label="分享對象"><div class="rms-head"><h2>分享給誰？</h2>${x()}</div><div class="rms-share-info"><span class="rms-share-icon">${icons.share}</span><div><strong>${E(data.title)}</strong><p>${E(data.conditions||c.conditions)}</p></div></div><div class="rms-targets"><button class="rms-target line" data-rms="target" data-value="LINE"><span class="rms-line-badge">LINE</span>LINE · 選擇分享對象</button><button class="rms-target" data-rms="copy">複製連結</button><button class="rms-target" data-rms="target" data-value="其他 App">其他分享對象</button></div><p class="rms-muted" style="font-size:11px;margin:12px 0 0">分享操作為介面示意，不會實際傳送。</p><details class="rms-preview"><summary>預覽圖卡與加上說明</summary><div class="rms-imagecard"><div class="rms-imagehead"><strong>${E(data.title)}</strong>${E(data.conditions||c.conditions)}</div><div class="rms-imagebody">${data.html||`<p>${E(c.summary)}</p>`}</div><div class="rms-image-note" id="rms-note-out" hidden></div></div><label for="rms-note-in">加一句說明</label><textarea id="rms-note-in" placeholder="例如：請留意本週營收變化" maxlength="300"></textarea></details><details class="rms-preview"><summary>下載與其他選項</summary><div class="rms-downloads"><button data-rms="target" data-value="儲存圖卡">儲存圖卡</button><button data-rms="target" data-value="下載 Excel">下載 Excel</button></div></details></section></div>`);layer.querySelectorAll('.rms-imagebody [id]').forEach(el=>el.removeAttribute('id'));layer.querySelectorAll('.rms-imagebody [data-a]').forEach(el=>el.removeAttribute('data-a'))}
+function plot({values,previous,labels,format,selected=null,action=null,actionValues=null,label='趨勢圖'}){const W=600,H=250,L=64,R=18,T=24,B=44;const all=[...values,...(previous||[])].filter(Number.isFinite),min=Math.min(0,...all),max=Math.max(1,...all);const pad=(max-min)*.12,lo=min<0?min-pad:0,hi=max+pad, y=v=>T+(hi-v)/(hi-lo)*(H-T-B),xx=i=>L+i*(W-L-R)/Math.max(1,values.length-1);const path=v=>v.map((v,i)=>`${i?'L':'M'}${xx(i).toFixed(2)},${y(v).toFixed(2)}`).join(' ');return `<svg class="rms-linechart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${E(label)}"><title>${E(label)}</title>${[0,1,2,3].map(i=>{const v=lo+(hi-lo)*i/3;return `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-10}" y="${y(v)+5}" text-anchor="end" fill="var(--muted)" font-size="13">${E(format(v))}</text>`}).join('')}${previous?`<path d="${path(previous)}" fill="none" stroke="#999" stroke-width="2.5" stroke-dasharray="7 6"/>`:''}<path d="${path(values)}" fill="none" stroke="var(--orange)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>${values.map((v,i)=>`<circle cx="${xx(i)}" cy="${y(v)}" r="${i===selected?6:3.5}" fill="${i===selected?'var(--orange-ink)':'var(--orange)'}"/>`).join('')}${labels.map((l,i)=>i===0||i===labels.length-1||labels.length<=7||i%2===0?`<text x="${xx(i)}" y="${H-14}" font-size="13" text-anchor="middle" fill="var(--muted)">${E(l)}</text>`:'').join('')}${action?values.map((v,i)=>`<rect data-a="${E(action)}" data-v="${E(actionValues? actionValues[i]:i)}" x="${xx(i)-18}" y="${T}" width="36" height="${H-T-B}" fill="transparent" role="button" tabindex="0" aria-label="${E(labels[i]+': '+format(v))}" style="cursor:pointer"/>`).join(''):''}</svg>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rms]');if(!b)return;const a=b.dataset.rms;if(a==='close'||a==='scrim'){if(a==='scrim'&&e.target!==b)return;close()}else if(a==='drawer')drawer();else if(a==='ai')ai();else if(a==='prompt')answer(b.dataset.value);else if(a==='target')notify(`已選擇${b.dataset.value}（操作示意，尚未傳送）`);else if(a==='copy')notify('複製連結操作示意：連結將保留報表與目前條件');else if(a==='navigate'){close()}});
+document.addEventListener('input',e=>{if(e.target.id==='rms-nav-search'){const q=e.target.value.trim();layer.querySelectorAll('.rms-navlink').forEach(a=>a.hidden=!a.textContent.includes(q))}if(e.target.id==='rms-note-in'){const o=document.getElementById('rms-note-out');o.textContent=e.target.value;o.hidden=!e.target.value}});
+document.addEventListener('submit',e=>{if(e.target.id==='rms-ai-form'){e.preventDefault();answer(document.getElementById('rms-ai-input').value)}});
+document.addEventListener('keydown',e=>{if(e.target.matches('svg [role="button"]')&&['Enter',' '].includes(e.key)){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}if(!layer.innerHTML)return;if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const f=[...layer.querySelectorAll('button,a,input,textarea,summary')].filter(el=>!el.hidden&&el.getClientRects().length),first=f[0],last=f.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}});
+let previousScroll=0;window.addEventListener('scroll',()=>{const y=window.scrollY;document.querySelector('.rms-fab')?.classList.toggle('hide',y>previousScroll&&y>120);previousScroll=y},{passive:true});
+window.RMSDemo={configure:options=>cfg=options,drawer,ai,share,plot,icons,escape:E,notify};
+})();
+
+</script>
+<script>
+(function(){
+const INCOMING=new URLSearchParams(location.search);
+const IC={
+  menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  sort:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10l4-4 4 4M8 14l4 4 4-4"/></svg>'
+};
+// ---------- sample data (示意) ----------
+const STORES=[
+ ['中部菜單',['南投草屯店','台南永康店','台中建和店','彰化中正店','台中靜宜店','彰化員林店','高雄建工店','高雄岡山店','南投復興店','雲林斗六店','台中大里店','嘉義興業店']],
+ ['北部菜單',['台北公館店','新北板橋店','桃園中壢店','新竹竹北店','台北南港店','新北三重店','基隆仁愛店','桃園藝文店']],
+ ['(未知)',['快閃一號店','中央廚房門市']]
+];
+let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646};
+const BASE=[]; let code=1;
+STORES.forEach(([g,names])=>names.forEach(n=>{
+  const rev=Math.round((260000+rnd()*460000)/10)*10, orders=Math.round(rev/(560+rnd()*190));
+  const voidN=Math.round(rnd()*10), voidRev=Math.round(voidN*(400+rnd()*900));
+  const lw=rev*(0.86+rnd()*0.26), lm=rev*(0.78+rnd()*0.32), ly=rev*(0.8+rnd()*0.4);
+  BASE.push({code:'S'+String(code++).padStart(3,'0'),name:n,group:g,rev,orders,voidN,voidRev,lw,lm,ly});
+}));
+if(INCOMING.get('from')==='overview'){
+ const samples=[
+  {code:'V0',name:'內湖店',group:'示意品牌',region:'北部',rev:14827,orders:13,voidN:2,voidRev:1200,lw:12050,lm:14210,ly:13950},
+  {code:'V1',name:'台中建和店',group:'示意品牌',region:'中部',rev:9500,orders:9,voidN:1,voidRev:840,lw:8500,lm:8820,ly:9100},
+  {code:'V2',name:'台南永康店',group:'示意品牌',region:'南部',rev:8240,orders:8,voidN:3,voidRev:1560,lw:8101,lm:7950,ly:7900},
+  {code:'V3',name:'快閃一號店',group:'未分類',region:'未分類',rev:4200,orders:4,voidN:1,voidRev:600,lw:4500,lm:4141,ly:4200}
+ ];
+ const selected=INCOMING.get('scope')==='active'?samples.slice(0,1):samples;
+ BASE.splice(0,BASE.length,...selected);
+}
+const COLS=[
+ {k:'rev',l:'營業額',t:'money'},{k:'orders',l:'結帳單數',t:'int'},{k:'avg',l:'平均客單價',t:'money2'},
+ {k:'voidN',l:'作廢筆數',t:'int'},{k:'voidNPct',l:'作廢筆數佔比',t:'pct'},{k:'voidRev',l:'作廢金額',t:'money'},{k:'voidRevPct',l:'作廢金額佔比',t:'pct'},
+ {k:'lw',l:'上週同期銷售額',t:'money'},{k:'lwG',l:'銷售額上週成長率',t:'growth'},
+ {k:'lm',l:'上月同期銷售額',t:'money'},{k:'lmG',l:'銷售額上月成長率',t:'growth'},
+ {k:'ly',l:'去年同期銷售額',t:'money'},{k:'lyG',l:'銷售額去年成長率',t:'growth'}];
+const COLMAP=Object.fromEntries(COLS.map(c=>[c.k,c]));
+const PERIOD={day:{l:'日統計',range:'2026/10/06 - 2026/10/18',f:1},week:{l:'週統計',range:'2026 第 41 - 42 週',f:1.08},month:{l:'月統計',range:'2026/10',f:2.3}};
+if(INCOMING.get('from')==='overview'&&INCOMING.get('date')){PERIOD.day.range=INCOMING.get('date').replace('–',' - ')}
+const DATETYPE={book:'入帳日期',sale:'銷售日期'};
+const REGION_NAMES=['北部','中部','南部','未分類'];
+const inferRegion=name=>name==='快閃一號店'||name==='中央廚房門市'?'未分類':/台北|新北|桃園|新竹|基隆|內湖|信義|板橋|新莊/.test(name)?'北部':/南投|台中|彰化|雲林|苗栗/.test(name)?'中部':/嘉義|台南|高雄/.test(name)?'南部':'未分類';
+BASE.forEach(r=>{r.region=r.region||inferRegion(r.name);r.group=r.region});
+const GROUPS=['全部',...REGION_NAMES.filter(g=>BASE.some(r=>r.region===g))];
+
+// ---------- state + remembered preferences ----------
+const DEF={period:'day',dateType:'book',group:'全部',mode:'name',showCode:false,cols:['rev','orders','avg','lwG'],view:'chart',chartMetric:'rev',pageSize:10};
+const KEY='rms-store-report-conclusions-v1';
+function load(){try{const p=JSON.parse(localStorage.getItem(KEY)||'null');return p&&typeof p==='object'?p:null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({period:S.period,dateType:S.dateType,group:S.group,mode:S.mode,showCode:S.showCode,cols:S.cols,view:S.view,chartMetric:S.chartMetric,pageSize:S.pageSize}))}catch(e){}}
+const saved=load();
+const S=Object.assign({},DEF,saved||{},{remembered:!!saved,qOpen:false,trendStore:'all',trendPoint:6,allRanks:false,filter:'',sort:{k:'rev',dir:-1},page:1,shown:10,sheet:null,share:null});
+if(!Array.isArray(S.cols)||!S.cols.length) S.cols=DEF.cols.slice();
+if(!GROUPS.includes(S.group))S.group='全部';
+if(!['name','group','region'].includes(S.mode))S.mode='name';
+if(!['chart','cards','trend','table'].includes(S.view))S.view='chart';
+let draft=null, note='', marked=new Set();
+const mq=window.matchMedia('(max-width: 759px)'); let phone=mq.matches;
+
+// ---------- helpers ----------
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const n0=v=>Math.round(v).toLocaleString('en-US');
+const n2=v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+function derive(r){
+  const f=PERIOD[S.period].f, o={...r};
+  ['rev','orders','voidN','voidRev','lw','lm','ly'].forEach(k=>o[k]=r[k]*f);
+  o.avg=o.orders?o.rev/o.orders:0; o.voidNPct=o.orders?o.voidN/o.orders:0; o.voidRevPct=o.rev?o.voidRev/o.rev:0;
+  o.lwG=o.lw?o.rev/o.lw-1:0; o.lmG=o.lm?o.rev/o.lm-1:0; o.lyG=o.ly?o.rev/o.ly-1:0; return o;
+}
+function sumRows(rs,label,group){
+  const o={name:label,group,code:'',rev:0,orders:0,voidN:0,voidRev:0,lw:0,lm:0,ly:0,count:rs.length};
+  rs.forEach(r=>['rev','orders','voidN','voidRev','lw','lm','ly'].forEach(k=>o[k]+=r[k]));
+  o.avg=o.orders?o.rev/o.orders:0; o.voidNPct=o.orders?o.voidN/o.orders:0; o.voidRevPct=o.rev?o.voidRev/o.rev:0;
+  o.lwG=o.lw?o.rev/o.lw-1:0; o.lmG=o.lm?o.rev/o.lm-1:0; o.lyG=o.ly?o.rev/o.ly-1:0; return o;
+}
+function cell(k,v){
+  const t=COLMAP[k].t;
+  if(t==='money') return n2(v);
+  if(t==='money2') return n2(v);
+  if(t==='int') return n0(v);
+  if(t==='pct') return (v*100).toFixed(2)+'%';
+  if(t==='growth'){const s=(v*100).toFixed(2)+'%';return `<span class="${v<0?'neg':''}">${s}</span>`}
+  return v;
+}
+function shortVal(k,v){const t=COLMAP[k].t;if(t==='int')return n0(v);if(t==='pct'||t==='growth')return (v>0&&t==='growth'?'+':'')+(v*100).toFixed(1)+'%';return '$'+n0(v)}
+function rows(){
+  let rs=BASE.map(derive).filter(r=>S.group==='全部'||r.group===S.group);
+  if(S.filter.trim()) rs=rs.filter(r=>(r.name+r.code+r.group).includes(S.filter.trim()));
+  return rs;
+}
+function sorted(rs,k,dir){return rs.slice().sort((a,b)=>(a[k]-b[k])*dir)}
+const storeCount=()=>BASE.filter(r=>S.group==='全部'||r.group===S.group).length;
+
+// ---------- pieces ----------
+function shell(inner){return `<header class="appbar gut"><div class="brand"><button class="ib" data-rms="drawer" aria-label="報表切換">${IC.menu}</button>專加科技 - RMS</div><div class="who">示意帳號</div></header><div class="titlebar gut"><div class="side"><button class="ib mobile-nav" data-rms="drawer" aria-label="報表切換">${IC.menu}</button><a class="ib" href="${DASHBOARD_FILE}?restore=1" aria-label="返回營運總覽">${IC.back}</a></div><h1>門市營收一覽表</h1><div class="side r"><button class="ib" data-a="share" aria-label="分享目前報表">${RMSDemo.icons.share}</button></div></div>${inner}<button class="rms-fab" data-rms="ai" aria-label="問 AI 助理">AI</button>`}
+
+function summaryBar(){return `<div class="stickyq"><div class="gut summary"><div class="report-conditions"><strong>${esc(PERIOD[S.period].range)}</strong><span>${PERIOD[S.period].l} · ${DATETYPE[S.dateType]} · ${S.group==='全部'?'全部門市':esc(S.group)}（${storeCount()} 間）</span></div><button class="edit" data-a="openq" aria-expanded="${S.qOpen}">修改條件</button></div></div>`}
+
+function formFields(d){
+  return `<div><div class="seg" role="group" aria-label="統計方式">${Object.keys(PERIOD).map(k=>`<button data-a="dp" data-k="period" data-v="${k}" aria-pressed="${d.period===k}">${PERIOD[k].l}</button>`).join('')}</div></div>
+  <div class="frow"><div class="field"><span class="fl">日期</span><span style="display:flex;gap:14px">${Object.keys(DATETYPE).map(k=>`<label class="radio"><input type="radio" name="dt" data-a="dp" data-k="dateType" data-v="${k}" ${d.dateType===k?'checked':''}>${DATETYPE[k]}</label>`).join('')}</span></div>
+  <div class="field"><label for="f-range">期間</label><input id="f-range" class="under" value="${esc(PERIOD[d.period].range)}" readonly></div></div>
+  <div class="frow"><div class="field"><label for="f-corp">集團名稱</label><select id="f-corp" class="under"><option>示意集團</option></select></div>
+  <div class="field"><label for="f-brand">品牌名稱</label><select id="f-brand" class="under"><option>示意品牌</option></select></div>
+  <div class="field"><label for="f-group">門市篩選</label><select id="f-group" class="under" data-a="dsel" data-k="group">${GROUPS.map(g=>`<option ${d.group===g?'selected':''}>${g}</option>`).join('')}</select></div></div>`;
+}
+function inlineQuery(){
+  if(!S.qOpen) return '';
+  return `<section class="gut qform" aria-label="查詢條件">${formFields(draft)}<div style="display:flex;gap:10px"><button class="btn" data-a="refresh">更新時間</button><button class="btn primary" data-a="search">搜尋</button><button class="btn" data-a="closeq">取消</button></div></section>`;
+}
+function settingsInline(){
+  return `<div class="band gut"><span>顯示設定</span></div><div class="gut settings">
+   <div class="field"><span class="fl">門市顯示</span><label class="radio"><input type="radio" name="md" data-a="set" data-k="mode" data-v="group" ${S.mode==='group'?'checked':''}>門市群組</label><label class="radio"><input type="radio" name="md" data-a="set" data-k="mode" data-v="name" ${S.mode==='name'?'checked':''}>門市名稱</label></div>
+   <label class="ck"><input type="checkbox" data-a="code" ${S.showCode?'checked':''}>門市代碼</label>
+   <div class="field"><span class="fl">統計欄位</span><button class="btn" data-a="cols">已選 ${S.cols.length} / ${COLS.length} 欄</button></div></div>`;
+}
+function kpis(rs){const t=sumRows(rs,'總計');return `<section class="gut report-summary" aria-label="本次查詢總計"><div class="report-total"><div><span class="hint">本次查詢總計</span><h2>總營業額</h2><strong>$${n0(t.rev)}</strong></div><div class="report-change ${t.lwG<0?'neg':'pos'}">${t.lw>0?`${t.lwG<0?'▼':'▲'} ${Math.abs(t.lwG*100).toFixed(1)}%<small>比上週同期</small>`:'—<small>無比較基期</small>'}</div></div><div class="summary-metrics"><div><span>結帳單數</span><b>${n0(t.orders)}</b></div><div><span>平均客單價</span><b>$${n0(t.avg)}</b></div><div><span>作廢金額佔比</span><b>${(t.voidRevPct*100).toFixed(1)}%</b></div></div></section>`}
+
+function toolbar(){return `<div class="gut report-controls"><div class="report-viewrow"><label class="metric-label">指標<select aria-label="圖表指標" data-a="metric">${['rev','orders','avg','lwG'].map(k=>`<option value="${k}" ${S.chartMetric===k?'selected':''}>${COLMAP[k].l}</option>`).join('')}</select></label><label class="metric-label">檢視層級<select aria-label="檢視層級" data-a="dimension"><option value="name" ${S.mode==='name'?'selected':''}>按門市</option><option value="group" ${S.mode==='group'?'selected':''}>按門市群組</option><option value="region" ${S.mode==='region'?'selected':''}>按區域</option></select></label><button class="btn" data-a="settings">顯示設定</button></div><div class="seg" role="group" aria-label="呈現方式"><button data-a="view" data-v="chart" aria-pressed="${S.view==='chart'}">排名</button><button data-a="view" data-v="cards" aria-pressed="${S.view==='cards'}">卡片</button><button data-a="view" data-v="trend" aria-pressed="${S.view==='trend'}">趨勢</button><button data-a="view" data-v="table" aria-pressed="${S.view==='table'}">表格</button></div><label class="search"><span class="sr">過濾門市</span>${IC.search}<input id="filter" placeholder="搜尋門市名稱或代碼" value="${esc(S.filter)}"></label></div>`}
+
+function tableView(rs){
+ const cols=S.cols.map(k=>COLMAP[k]),label=S.mode==='region'?'區域':'門市／區域',span=1+(S.showCode&&S.mode==='name'?1:0)+cols.length;
+ const row=(r,cls='')=>`<tr class="${cls}"><td class="name">${esc(r.name)}${r.count?` <span class="hint">${r.count} 間</span>`:''}</td>${S.showCode&&S.mode==='name'?`<td class="code">${r.code}</td>`:''}${cols.map(c=>`<td>${cell(c.k,r[c.k])}</td>`).join('')}</tr>`;
+ const head=`<tr><th class="name" scope="col">${label}</th>${S.showCode&&S.mode==='name'?'<th class="code" scope="col">代碼</th>':''}${cols.map(c=>`<th scope="col" aria-sort="${S.sort.k===c.k?(S.sort.dir<0?'descending':'ascending'):'none'}"><button data-a="sort" data-k="${c.k}">${c.l}${IC.sort}</button></th>`).join('')}</tr>`;
+ const total=row(sumRows(rs,'總計'),'total'); let groups='';
+ if(S.mode==='region') groups=sorted(GROUPS.slice(1).map(g=>sumRows(rs.filter(r=>r.region===g),g,g)).filter(r=>r.count),S.sort.k,S.sort.dir).map(r=>row(r)).join('');
+ else {
+  const ordered=sorted(rs,S.sort.k,S.sort.dir);
+  groups=GROUPS.slice(1).map(g=>{const subset=ordered.filter(r=>r.region===g);if(!subset.length)return'';return `<tr class="grp"><td class="name">${esc(g)}（${subset.length} 間）</td><td colspan="${span-1}"></td></tr>${subset.map((r,i)=>row(r,i%2?'alt':'')).join('')}`}).join('');
+ }
+ return `<div class="tbox"><table><thead>${head}</thead><tbody>${total}${groups}</tbody></table></div>`;
+}
+
+function rankingRows(rs){const list=S.mode==='region'?GROUPS.slice(1).map((g,i)=>{const sub=rs.filter(r=>r.region===g);return sub.length?{...sumRows(sub,g,g),code:'R'+i,region:g}:null}).filter(Boolean):rs;return list.sort((a,b)=>b[S.chartMetric]-a[S.chartMetric])}
+function chartView(rs){
+ const m=S.chartMetric,all=rankingRows(rs),list=S.allRanks?all:all.slice(0,10),mx=Math.max(.001,...all.map(r=>Math.abs(r[m]))),best=all[0];
+ const item=(r,i)=>`<div class="report-rank"><div class="rank-title"><span>${i+1}</span><strong>${esc(r.name)}</strong><b>${shortVal(m,r[m])}</b></div><div class="rank-track ${m==='lwG'?'diverging':''}"><i style="${m==='lwG'?`left:${r[m]<0?50-Math.abs(r[m])/mx*50:50}%;width:${Math.abs(r[m])/mx*50}%`:`width:${Math.abs(r[m])/mx*100}%`};background:${r[m]<0?'var(--red)':'var(--orange)'}"></i></div>${m!=='lwG'&&r.lw>0?`<div class="rank-sub ${r.lwG<0?'neg':'pos'}">${r.lwG<0?'▼':'▲'} ${Math.abs(r.lwG*100).toFixed(1)}% <span>比上週同期</span></div>`:''}</div>`;
+ let content='';
+ if(S.mode==='group')content=GROUPS.slice(1).map(g=>{const sub=rs.filter(r=>r.region===g).sort((a,b)=>b[m]-a[m]);if(!sub.length)return'';const sum=sumRows(sub,g,g);return `<details class="region-group" open><summary><strong>${esc(g)}</strong><span>${sub.length} 間門市</span><b>${shortVal(m,sum[m])}</b></summary><div class="region-group-body">${sub.map((r,i)=>item(r,i+1)).join('')}</div></details>`}).join('');
+ else content=`<div class="report-ranks">${list.map(item).join('')}</div>${all.length>10?`<button class="more" data-a="allranks">${S.allRanks?'收合至前 10 名':'顯示全部 '+all.length+' 項'}</button>`:''}`;
+ return `<section class="gut report-chart" aria-label="門市排名圖表"><div class="report-chart-heading"><div><h2>${COLMAP[m].l}${S.mode==='region'?'區域總覽':'排名'}</h2><p>${S.mode==='group'?'依區域分段 · 可展開或收合':`由高到低 · ${all.length} ${S.mode==='region'?'個區域':'間門市'}`}</p></div><button class="ib" data-a="share" aria-label="分享這張排名圖">${RMSDemo.icons.share}</button></div>${best&&S.mode!=='group'?`<div class="rms-insight">${esc(best.name)}最高，${shortVal(m,best[m])}。</div>`:''}${content}</section>`;
+}
+function cardsView(rs){
+ const card=r=>`<article class="store-card"><div class="store-card-head"><strong>${esc(r.name)}</strong><button class="ib" data-a="share" aria-label="分享${esc(r.name)}卡片">${RMSDemo.icons.share}</button></div><div class="store-card-total"><span>營業額</span><b>$${n0(r.rev)}</b><small class="${r.lwG<0?'neg':'pos'}">${r.lwG<0?'▼':'▲'} ${Math.abs(r.lwG*100).toFixed(1)}%　比上週同期</small></div><div class="store-card-metrics"><div><span>結帳單數</span><b>${n0(r.orders)}</b></div><div><span>平均客單價</span><b>$${n0(r.avg)}</b></div><div><span>作廢金額</span><b>$${n0(r.voidRev)}</b></div></div></article>`;
+ let body='';
+ if(S.mode==='region')body=rankingRows(rs).map(r=>`<article class="region-total-card"><span>${esc(r.name)}區總計</span><strong>$${n0(r.rev)}</strong><small>${n0(r.orders)} 筆結帳 · ${r.count} 間門市</small></article>`).join('');
+ else if(S.mode==='group')body=GROUPS.slice(1).map(g=>{const sub=rs.filter(r=>r.region===g).sort((a,b)=>b.rev-a.rev);return sub.length?`<details class="region-group" open><summary><strong>${esc(g)}</strong><span>${sub.length} 間門市</span><b>$${n0(sumRows(sub,g,g).rev)}</b></summary><div class="region-group-body card-list">${sub.map(card).join('')}</div></details>`:''}).join('');
+ else body=`<div class="card-list">${sorted(rs,'rev',-1).map(card).join('')}</div>`;
+ return `<section class="gut report-chart" aria-label="門市多指標卡片"><div class="report-chart-heading"><div><h2>門市營運卡片</h2><p>${S.mode==='region'?'各區總計':'每店一張卡 · 同時查看多項指標'}</p></div><button class="ib" data-a="share" aria-label="分享門市卡片">${RMSDemo.icons.share}</button></div>${body}</section>`;
+}
+function trendView(rs){
+ const m=S.chartMetric,list=rankingRows(rs),scope=list.find(r=>r.code===S.trendStore),t=scope||sumRows(rs,'全部門市總計');
+ const endText=PERIOD[S.period].range.match(/2026\/\d{1,2}\/\d{1,2}/g),end=endText?.at(-1)||'2026/10/18',parts=end.split('/').map(Number),day=new Date(Date.UTC(parts[0],parts[1]-1,parts[2]));
+ const labels=Array.from({length:7},(_,i)=>{const d=new Date(day);d.setUTCDate(d.getUTCDate()-6+i);return (d.getUTCMonth()+1)+'/'+d.getUTCDate()});
+ const weight=[.78,.93,.88,1.04,.98,1.13,1.08],old=[.84,.87,.94,.96,1.02,.99,1.03],variation=(scope?parseInt(scope.code.replace(/\D/g,''),10)||1:3)*.013;
+ const base=m==='lwG'?t.lwG:m==='avg'?t.avg:t[m]/(INCOMING.get('from')==='overview'?1:13);
+ const values=weight.map((w,i)=>m==='lwG'?base+(w-1)*.2:Math.max(0,base*(w+Math.sin(i+variation)*.045))),previous=old.map((w,i)=>m==='lwG'?(w-1)*.14:Math.max(0,(m==='avg'?t.avg*.96:m==='rev'?t.lw/(INCOMING.get('from')==='overview'?1:13):base*.93)*w));
+ const format=v=>m==='lwG'?(v*100).toFixed(1)+'%':m==='orders'?n0(v):'$'+n0(v),axis=v=>m==='lwG'?(v*100).toFixed(0)+'%':Math.abs(v)>=1000?(m==='orders'?'':'$')+(v/1000).toFixed(1)+'K':(m==='orders'?'':'$')+n0(v),idx=Math.max(0,Math.min(6,S.trendPoint));
+ return `<section class="gut report-chart" aria-label="逐日趨勢圖表"><div class="report-chart-heading"><div><h2>${COLMAP[m].l}逐日趨勢</h2><p>近 7 日 · 示意數據</p></div><button class="ib" data-a="share" aria-label="分享這張趨勢圖">${RMSDemo.icons.share}</button></div><label class="trend-store">查看<select data-a="trendstore" aria-label="趨勢門市"><option value="all">全部門市總計</option>${list.map(r=>`<option value="${esc(r.code)}" ${S.trendStore===r.code?'selected':''}>${esc(r.name)}</option>`).join('')}</select></label><div class="trend-readout"><span>${labels[idx]}</span><strong>${format(values[idx])}</strong><span class="hint">${esc(t.name)}</span></div>${RMSDemo.plot({values,previous,labels,format:axis,selected:idx,action:'trendpoint',label:COLMAP[m].l+'近7日示意趨勢，與上週同期比較'})}<div class="rms-legend"><span><i></i>本期（示意）</span><span><i class="previous"></i>上週同期（示意）</span></div><p class="trend-disclaimer">逐日數值為示意，用於展示趨勢閱讀方式，不代表真實歷史紀錄。</p></section>`;
+}
+
+function page(){const rs=rows();return shell(`${summaryBar()}<main class="report-main">${kpis(rs)}${toolbar()}${rs.length?(S.view==='table'?`<section class="report-chart" aria-label="報表資料表"><div class="gut report-chart-heading"><div><h2>門市營收明細</h2><p>核對完整欄位與精確數字</p></div><button class="ib" data-a="share" aria-label="分享這份資料表">${RMSDemo.icons.share}</button></div>${tableView(rs)}</section>`:S.view==='trend'?trendView(rs):S.view==='cards'?cardsView(rs):chartView(rs)):`<p class="gut empty-result">沒有符合「${esc(S.filter)}」的門市。清除搜尋條件即可看到全部。</p>`}<p class="gut foot">結論建議版 · 數字為示意資料。</p></main>`)}
+
+// ---------- sheets / dialogs ----------
+const dlg=(id,title,body)=>`<div class="overlay" data-a="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="${id}"><div class="dhead"><h2 id="${id}">${title}</h2><button class="ib" data-a="close" aria-label="關閉">${IC.close}</button></div>${body}</div></div>`;
+function querySheet(){return dlg('q-h','查詢條件',`<div class="qform" style="padding-block:12px 0">${formFields(draft)}</div><div style="display:flex;gap:10px;margin-top:18px"><button class="btn" data-a="refresh">更新時間</button><button class="btn solid" style="flex:1" data-a="search">搜尋</button></div><p class="hint" style="margin-top:10px">搜尋後條件會收合到畫面上方，並記住這次的設定。</p>`)}
+function settingsSheet(){return dlg('s-h','顯示設定',`<span class="lbl">檢視層級</span><div class="opts" style="grid-template-columns:1fr 1fr 1fr"><button class="opt" data-a="set" data-k="mode" data-v="name" aria-pressed="${S.mode==='name'}">按門市</button><button class="opt" data-a="set" data-k="mode" data-v="group" aria-pressed="${S.mode==='group'}">門市群組</button><button class="opt" data-a="set" data-k="mode" data-v="region" aria-pressed="${S.mode==='region'}">按區域</button></div><label class="ck" style="margin-top:12px"><input type="checkbox" data-a="code" ${S.showCode?'checked':''}>顯示門市代碼</label><span class="lbl">統計欄位</span><button class="btn" style="width:100%;margin-top:8px" data-a="cols">已選 ${S.cols.length} / ${COLS.length} 欄，點此調整</button><button class="btn solid" style="width:100%;margin-top:18px" data-a="close">完成</button>`)}
+
+function colsSheet(){
+  return dlg('c-h','統計欄位',`<p class="hint" style="margin:6px 0 0">預設只顯示最常看的 4 欄。手機上建議 3–4 欄。</p><div class="colgrid">${COLS.map(c=>`<label class="ck"><input type="checkbox" data-a="colck" data-k="${c.k}" ${draft.cols.includes(c.k)?'checked':''}>${c.l}</label>`).join('')}</div>
+  <div style="display:flex;gap:10px;margin-top:16px"><button class="btn" data-a="coldef">恢復預設</button><button class="btn solid" style="flex:1" data-a="colsave">套用</button></div>`)}
+function shareSheet(){
+  const rs=rows(), t=sumRows(rs,'總計'), sh=S.share;
+  const cols=S.cols.slice(0,3).map(k=>COLMAP[k]);
+  const top=sorted(S.mode==='group'?GROUPS.slice(1).map(g=>rs.filter(r=>r.group===g)).filter(x=>x.length).map(x=>sumRows(x,x[0].group)):rs,sh.view==='chart'?S.chartMetric:S.sort.k,-1).slice(0,5);
+  const k1=sh.view==='chart'?S.chartMetric:null;
+  const body=sh.view==='chart'
+    ? `<table class="mini"><tbody>${top.map(r=>`<tr class="${marked.has(r.name)?'on':''}"><td><button data-a="mark" data-v="${esc(r.name)}" aria-pressed="${marked.has(r.name)}">${esc(r.name)}</button></td><td style="text-align:right">${shortVal(k1,r[k1])}</td></tr>`).join('')}</tbody></table>`
+    : `<table class="mini"><thead><tr><th style="text-align:left">${S.mode==='group'?'群組':'門市'}</th>${cols.map(c=>`<th style="text-align:right">${c.l}</th>`).join('')}</tr></thead><tbody>${top.map(r=>`<tr class="${marked.has(r.name)?'on':''}"><td><button data-a="mark" data-v="${esc(r.name)}" aria-pressed="${marked.has(r.name)}">${esc(r.name)}</button></td>${cols.map(c=>`<td style="text-align:right">${shortVal(c.k,r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  return dlg('sh-h',`分享${sh.view==='chart'?'圖表':'表格'}`,`<p class="hint" style="margin:4px 0 0">圖卡已自動帶上查詢條件。點門市名稱可標記重點。</p>
+  <div class="sharecard"><div class="hd"><b>門市營收一覽表${sh.view==='chart'?'・'+COLMAP[S.chartMetric].l:''}</b><p>${PERIOD[S.period].l}｜${PERIOD[S.period].range}｜${DATETYPE[S.dateType]}｜${S.group==='全部'?'全部門市':S.group}（${storeCount()} 間）</p></div>
+  <div class="bd"><div style="font-size:13px;color:var(--muted)">總營業額 <b style="color:var(--fg);font-size:17px">$${n0(t.rev)}</b>　比上週同期 <span class="${t.lwG<0?'neg':'pos'}">${t.lwG>=0?'+':''}${(t.lwG*100).toFixed(2)}%</span></div>
+  <div style="font-size:12px;color:var(--muted);margin:8px 0 2px">前 5 名（依${COLMAP[sh.view==='chart'?S.chartMetric:S.sort.k].l}）</div>${body}
+  <div id="note-out" class="note"${note?'':' hidden'}>${esc(note)}</div><div class="hint" style="margin-top:10px;font-size:11px">RMS 產生於 2026/11/04 · 點連結可查看完整報表</div></div></div>
+  <label class="lbl" for="note-in">加上說明（會顯示在圖卡上）</label><textarea id="note-in" placeholder="例如：中部菜單本週成長最多，請北部參考">${esc(note)}</textarea>
+  <div class="acts"><button class="act" data-a="toast" data-msg="已開啟 LINE 分享（原型示意）">傳到 LINE</button><button class="act" data-a="copy">複製連結</button><button class="act" data-a="toast" data-msg="已儲存圖片（原型示意）">儲存圖片</button></div>`);
+}
+
+// ---------- render + events ----------
+const root=document.getElementById('root'), layer=document.getElementById('layer'), toastEl=document.getElementById('toast');
+let tt; function toast(m){toastEl.textContent=m;toastEl.hidden=false;clearTimeout(tt);tt=setTimeout(()=>toastEl.hidden=true,2400)}
+function hashOf(){return ['r',S.period,S.dateType,GROUPS.indexOf(S.group),S.mode,S.view,S.chartMetric,S.trendStore].join('-')}
+function readHash(){const p=(location.hash||'').slice(1).split('-');if(p[0]!=='r'||p.length<6)return false;
+  if(PERIOD[p[1]])S.period=p[1]; if(DATETYPE[p[2]])S.dateType=p[2]; if(GROUPS[+p[3]])S.group=GROUPS[+p[3]];
+  if(['name','group','region'].includes(p[4]))S.mode=p[4]; if(['table','chart','cards','trend'].includes(p[5]))S.view=p[5];if(['rev','orders','avg','lwG'].includes(p[6]))S.chartMetric=p[6];if(p[7])S.trendStore=p[7]; S.qOpen=false; S.remembered=false; return true}
+function render(keepFocus){
+  const f=document.activeElement&&document.activeElement.id; const pos=f==='filter'?document.activeElement.selectionStart:null;
+  root.innerHTML=page();
+  if(phone&&S.qOpen&&!S.sheet) S.sheet='q';
+  layer.innerHTML=S.sheet==='q'?querySheet():S.sheet==='settings'?settingsSheet():S.sheet==='cols'?colsSheet():S.sheet==='share'?shareSheet():'';
+  if(f){const el=document.getElementById(f);if(el){el.focus();if(pos!==null)el.setSelectionRange(pos,pos)}}
+  const h='#'+hashOf(); if(location.hash!==h){try{history.replaceState(null,'',h)}catch(e){}}
+}
+function openQuery(){draft={period:S.period,dateType:S.dateType,group:S.group};S.qOpen=true;S.sheet='q'}
+if(S.qOpen) draft={period:S.period,dateType:S.dateType,group:S.group};
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]'); if(!b) return; const a=b.dataset.a;
+  if(a==='scrim'&&e.target!==b) return;
+  if(b.tagName==='INPUT'||b.tagName==='SELECT') return; // handled by change
+  if(a==='openq') { openQuery() }
+  else if(a==='closeq'){S.qOpen=false}
+  else if(a==='dp'){draft[b.dataset.k]=b.dataset.v}
+  else if(a==='search'){Object.assign(S,draft);S.qOpen=false;S.sheet=null;S.page=1;S.shown=10;S.remembered=false;save();toast('已搜尋並記住條件，條件已收合到上方')}
+  else if(a==='refresh'){toast('資料已更新至 2026/11/04 13:50（原型示意）');return}
+  else if(a==='set'){S[b.dataset.k]=b.dataset.v;save()}
+  else if(a==='view'){S.view=b.dataset.v;save()}
+  else if(a==='cm'){S.chartMetric=b.dataset.v;save()}
+  else if(a==='sort'){const k=b.dataset.k;S.sort=S.sort.k===k?{k,dir:-S.sort.dir}:{k,dir:-1};S.page=1}
+  else if(a==='page'){S.page=+b.dataset.v}
+  else if(a==='more'){S.shown+=10}
+  else if(a==='settings'){S.sheet='settings'}
+  else if(a==='cols'){draft={cols:S.cols.slice()};S.sheet='cols'}
+  else if(a==='coldef'){draft.cols=DEF.cols.slice()}
+  else if(a==='colsave'){if(!draft.cols.length){toast('至少要選 1 個欄位');return}S.cols=COLS.map(c=>c.k).filter(k=>draft.cols.includes(k));S.sheet=phone?'settings':null;save();toast(`已套用 ${S.cols.length} 個欄位`)}
+  else if(a==='share'){openReportShare();return}
+  else if(a==='allranks'){S.allRanks=!S.allRanks}
+  else if(a==='trendpoint'){S.trendPoint=+b.dataset.v}
+  else if(a==='mark'){const v=b.dataset.v;marked.has(v)?marked.delete(v):marked.add(v)}
+  else if(a==='close'||a==='scrim'){if(S.sheet==='q')S.qOpen=false;S.sheet=null}
+  else if(a==='toast'){toast(b.dataset.msg);return}
+  else if(a==='copy'){const url=location.href.split('#')[0]+'#'+hashOf();
+    try{navigator.clipboard.writeText(url).then(()=>toast('已複製連結，對方開啟會看到相同條件'),()=>toast('無法自動複製，請從網址列複製'))}catch(err){toast('無法自動複製，請從網址列複製')}return}
+  render();
+});
+document.addEventListener('change',e=>{
+  const t=e.target, a=t.dataset&&t.dataset.a;
+  if(a==='dp'){draft[t.dataset.k]=t.dataset.v}
+  else if(a==='dsel'){draft[t.dataset.k]=t.value;return}
+  else if(a==='metric'){S.chartMetric=t.value;S.trendPoint=6;save()}
+  else if(a==='dimension'){S.mode=t.value;save()}
+  else if(a==='trendstore'){S.trendStore=t.value;S.trendPoint=6}
+  else if(a==='set'){S[t.dataset.k]=t.dataset.v;save()}
+  else if(a==='code'){S.showCode=t.checked;save()}
+  else if(a==='colck'){const k=t.dataset.k;draft.cols=t.checked?[...draft.cols,k]:draft.cols.filter(x=>x!==k);return}
+  else if(a==='psize'){S.pageSize=+t.value;S.page=1;save()}
+  else return;
+  render();
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='filter'){S.filter=e.target.value;S.page=1;S.shown=10;render()}
+  if(e.target.id==='note-in'){note=e.target.value;const o=document.getElementById('note-out');if(o){o.textContent=note;o.hidden=!note}}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet){if(S.sheet==='q')S.qOpen=false;S.sheet=null;render()}});
+const onMq=()=>{phone=mq.matches;if(!phone&&S.sheet==='q')S.sheet=null;if(!phone&&S.sheet==='settings')S.sheet=null;render()};
+mq.addEventListener?mq.addEventListener('change',onMq):mq.addListener(onMq);
+window.addEventListener('hashchange',()=>{readHash();render()});
+const DASHBOARD_FILE='RMS 營運總覽優化版_結論建議.html';
+RMSDemo.configure({page:'report',dashboardHref:DASHBOARD_FILE+'?restore=1',reportHref:()=>location.href,context:()=>{const t=sumRows(rows(),'總計');return {title:'門市營收一覽表',conditions:`${PERIOD[S.period].range}｜${DATETYPE[S.dateType]}｜${S.group==='全部'?'全部門市':S.group}（${rows().length} 間）`,summary:`總營業額 ${n0(t.rev)}，結帳 ${n0(t.orders)} 單，平均客單價 ${n0(t.avg)}，比上週同期${t.lwG>=0?'成長':'下降'} ${Math.abs(t.lwG*100).toFixed(1)}%。`}}});
+function openReportShare(){const clone=document.querySelector('.report-chart')?.cloneNode(true);clone?.querySelectorAll('.report-chart-heading button,.more').forEach(el=>el.remove());RMSDemo.share({title:'門市營收一覽表・'+(S.view==='table'?'資料表':S.view==='cards'?'門市卡片':COLMAP[S.chartMetric].l+(S.view==='trend'?'逐日趨勢':'排名')),conditions:`${PERIOD[S.period].range}｜${DATETYPE[S.dateType]}｜${S.group==='全部'?'全部門市':S.group}（${rows().length} 間）`,html:clone?.innerHTML||'<p>目前沒有符合條件的資料。</p>'})}
+
+readHash(); render();
+})();
+</script>
+
+</body></html>
