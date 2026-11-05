@@ -250,6 +250,27 @@ html{scroll-behavior:smooth}*{box-sizing:border-box}button,a,input,select,textar
  .desktop-chart-body .legend i:nth-of-type(2){background:#94ca76}
  .desktop-chart-body .legend i:nth-of-type(3){background:#ffcc56}
 }
+
+/* Keep filters together and tighten ranking rhythm on responsive demo */
+@media (min-width:768px) and (max-width:1199px){
+ .report-controls{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+ .report-viewrow{display:flex;flex-wrap:wrap;align-items:center;gap:12px;width:100%;min-width:0}
+ .report-viewrow .metric-label{flex:1 1 240px}
+ .report-viewrow .metric-label select{min-width:0;width:100%}
+ .report-viewrow .btn{grid-column:auto;flex:0 0 160px;min-height:44px}
+ .report-controls .seg{width:100%}
+ .report-controls .search{width:100%;max-width:520px;flex:none;grid-column:auto}
+}
+@media (max-width:1199px){
+ .report-ranks{gap:0;margin-top:12px}
+ .report-rank{margin:0;padding:10px 0 12px;border-bottom:1px solid var(--line)}
+ .report-rank:last-child{border-bottom:0}
+ .rank-track{margin:5px 0 2px}
+ .rank-sub{line-height:1.35}
+}
+@media (max-width:767px){
+ .report-rank{padding:12px 4px}
+}
 </style>
 
 <div id="root"></div>
