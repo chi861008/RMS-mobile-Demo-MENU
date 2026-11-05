@@ -271,6 +271,42 @@ html{scroll-behavior:smooth}*{box-sizing:border-box}button,a,input,select,textar
 @media (max-width:767px){
  .report-rank{padding:12px 4px}
 }
+
+/* One store grouping model: North / Central / South are sections. */
+.report-controls{gap:12px}
+.report-controls .report-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.report-controls .report-tools .search{flex:1 1 240px;max-width:520px}
+.report-picker-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.report-picker{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:22px;background:var(--surface);font:inherit;font-weight:700;color:var(--fg)}
+.report-picker span{font-size:18px;color:var(--muted);line-height:1}
+.report-picker.secondary{font-weight:500}
+.report-by{color:var(--muted);font-size:13px;margin-left:4px}
+.report-picker-row h2{margin:0 8px 0 0}
+.report-group{margin-top:20px}
+.report-group:first-of-type{margin-top:0}
+.group-heading{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 2px;border-bottom:2px solid var(--orange);color:var(--orange-ink)}
+.group-heading strong{flex:1;font-size:15px}
+.group-heading span{font-size:12px;color:var(--muted)}
+.group-heading b{font-size:13px}
+.report-group .report-ranks{margin-top:4px}
+.picker-category{font-size:13px;color:var(--muted);margin:18px 0 4px}
+.picker-options{display:flex;flex-direction:column}
+.picker-options button{min-height:48px;padding:8px 4px;display:flex;align-items:center;justify-content:space-between;text-align:left;border:0;border-bottom:1px solid var(--line);background:var(--surface)}
+.picker-options button[aria-pressed=true]{color:var(--orange-ink);font-weight:700}
+@media(max-width:1199px){
+ .report-controls{display:flex;flex-direction:column;align-items:stretch}
+ .report-controls .seg{order:0}
+ .report-controls .report-tools{order:1}
+ .report-controls .report-tools .search{max-width:none}
+ .report-chart-heading>div{min-width:0}
+}
+@media(max-width:767px){
+ .titlebar .side{width:48px}
+ .report-picker{min-height:44px}
+ .group-heading{min-height:48px}
+ .report-controls .report-tools .search{flex-basis:100%}
+ .report-controls .report-tools .btn{width:100%}
+}
 </style>
 
 <div id="root"></div>
@@ -352,6 +388,7 @@ const REGION_NAMES=['北部','中部','南部','未分類'];
 const inferRegion=name=>name==='快閃一號店'||name==='中央廚房門市'?'未分類':/台北|新北|桃園|新竹|基隆|內湖|信義|板橋|新莊/.test(name)?'北部':/南投|台中|彰化|雲林|苗栗/.test(name)?'中部':/嘉義|台南|高雄/.test(name)?'南部':'未分類';
 BASE.forEach(r=>{r.region=r.region||inferRegion(r.name);r.group=r.region});
 const GROUPS=['全部',...REGION_NAMES.filter(g=>BASE.some(r=>r.region===g))];
+// 北／中／南是門市群組分段；未分類僅保留示意資料中尚未歸屬的門市。
 
 // ---------- state + remembered preferences ----------
 const DEF={period:'day',dateType:'book',group:'全部',mode:'name',showCode:false,cols:['rev','orders','avg','lwG'],view:'chart',chartMetric:'rev',pageSize:10};
@@ -362,7 +399,7 @@ const saved=load();
 const S=Object.assign({},DEF,saved||{},{remembered:!!saved,qOpen:false,trendStore:'all',trendPoint:6,allRanks:false,filter:'',sort:{k:'rev',dir:-1},page:1,shown:10,sheet:null,share:null});
 if(!Array.isArray(S.cols)||!S.cols.length) S.cols=DEF.cols.slice();
 if(!GROUPS.includes(S.group))S.group='全部';
-if(!['name','group','region'].includes(S.mode))S.mode='name';
+if(!['name','group'].includes(S.mode))S.mode='name';
 if(!['chart','cards','trend','table'].includes(S.view))S.view='chart';
 let draft=null, note='', marked=new Set();
 const mq=window.matchMedia('(max-width: 767px)'); let phone=mq.matches;
@@ -402,7 +439,7 @@ function sorted(rs,k,dir){return rs.slice().sort((a,b)=>(a[k]-b[k])*dir)}
 const storeCount=()=>BASE.filter(r=>S.group==='全部'||r.group===S.group).length;
 
 // ---------- pieces ----------
-function shell(inner){return `<header class="appbar gut"><div class="brand"><button class="ib" data-rms="drawer" aria-label="報表切換">${IC.menu}</button>專加科技 - RMS</div><div class="who"><span>◉ yuanchi_chang</span><span>⚙ 個人設定</span><span>◴ 版本歷程</span><span>⇥ 登出(29:54)</span></div></header><div class="titlebar gut"><div class="side"><button class="ib mobile-nav" data-rms="drawer" aria-label="報表切換">${IC.menu}</button><a class="ib" href="${DASHBOARD_FILE}?restore=1" aria-label="返回營運總覽">${IC.back}</a></div><h1>門市營收一覽表</h1><div class="side r"><button class="ib" data-a="share" aria-label="分享目前報表">${RMSDemo.icons.share}</button></div></div>${inner}<button class="rms-fab" data-rms="ai" aria-label="問 AI 助理">AI</button>`}
+function shell(inner){return `<header class="appbar gut"><div class="brand"><button class="ib" data-rms="drawer" aria-label="報表切換">${IC.menu}</button>專加科技 - RMS</div><div class="who"><span>◉ yuanchi_chang</span><span>⚙ 個人設定</span><span>◴ 版本歷程</span><span>⇥ 登出(29:54)</span></div></header><div class="titlebar gut"><div class="side"><a class="ib" href="${DASHBOARD_FILE}?restore=1" aria-label="返回營運總覽">${IC.back}</a></div><h1>門市營收一覽表</h1><div class="side r"><button class="ib" data-a="share" aria-label="分享目前報表">${RMSDemo.icons.share}</button></div></div>${inner}<button class="rms-fab" data-rms="ai" aria-label="問 AI 助理">AI</button>`}
 
 function summaryBar(){return `<div class="stickyq"><div class="gut summary"><div class="report-conditions"><strong>${esc(PERIOD[S.period].range)}</strong><span>${PERIOD[S.period].l} · ${DATETYPE[S.dateType]} · ${S.group==='全部'?'全部門市':esc(S.group)}（${storeCount()} 間）</span></div><button class="edit" data-a="openq" aria-expanded="${S.qOpen}">修改條件</button></div></div>`}
 
@@ -426,37 +463,31 @@ function settingsInline(){
 }
 function kpis(rs){const t=sumRows(rs,'總計');return `<section class="gut report-summary" aria-label="本次查詢總計"><div class="report-total"><div><span class="hint">本次查詢總計</span><h2>總營業額</h2><strong>$${n0(t.rev)}</strong></div><div class="report-change ${t.lwG<0?'neg':'pos'}">${t.lw>0?`${t.lwG<0?'▼':'▲'} ${Math.abs(t.lwG*100).toFixed(1)}%<small>比上週同期</small>`:'—<small>無比較基期</small>'}</div></div><div class="summary-metrics"><div><span>結帳單數</span><b>${n0(t.orders)}</b></div><div><span>平均客單價</span><b>$${n0(t.avg)}</b></div><div><span>作廢金額佔比</span><b>${(t.voidRevPct*100).toFixed(1)}%</b></div></div></section>`}
 
-function toolbar(){return `<div class="gut report-controls"><div class="report-viewrow"><label class="metric-label">指標<select aria-label="圖表指標" data-a="metric">${['rev','orders','avg','lwG'].map(k=>`<option value="${k}" ${S.chartMetric===k?'selected':''}>${COLMAP[k].l}</option>`).join('')}</select></label><label class="metric-label">檢視層級<select aria-label="檢視層級" data-a="dimension"><option value="name" ${S.mode==='name'?'selected':''}>按門市</option><option value="group" ${S.mode==='group'?'selected':''}>按門市群組</option><option value="region" ${S.mode==='region'?'selected':''}>按區域</option></select></label><button class="btn" data-a="settings">顯示設定</button></div><div class="seg" role="group" aria-label="呈現方式"><button data-a="view" data-v="chart" aria-pressed="${S.view==='chart'}">排名</button><button data-a="view" data-v="cards" aria-pressed="${S.view==='cards'}">卡片</button><button data-a="view" data-v="trend" aria-pressed="${S.view==='trend'}">趨勢</button><button data-a="view" data-v="table" aria-pressed="${S.view==='table'}">表格</button></div><label class="search"><span class="sr">過濾門市</span>${IC.search}<input id="filter" placeholder="搜尋門市名稱或代碼" value="${esc(S.filter)}"></label></div>`}
-
+function toolbar(){return `<div class="gut report-controls"><div class="seg" role="group" aria-label="呈現方式"><button data-a="view" data-v="chart" aria-pressed="${S.view==='chart'}">排名</button><button data-a="view" data-v="cards" aria-pressed="${S.view==='cards'}">卡片</button><button data-a="view" data-v="trend" aria-pressed="${S.view==='trend'}">趨勢</button><button data-a="view" data-v="table" aria-pressed="${S.view==='table'}">表格</button></div><div class="report-tools"><label class="search"><span class="sr">過濾門市</span>${IC.search}<input id="filter" placeholder="搜尋門市名稱或代碼" value="${esc(S.filter)}"></label><button class="btn" data-a="settings">顯示設定</button></div></div>`}
+function metricPicker(){return `<button class="report-picker" data-a="metricpicker" aria-haspopup="dialog" aria-label="選取指標，目前為${COLMAP[S.chartMetric].l}">${COLMAP[S.chartMetric].l}<span aria-hidden="true">⌄</span></button>`}
+function modePicker(){return `<span class="report-by">按</span><button class="report-picker secondary" data-a="modepicker" aria-haspopup="dialog" aria-label="選取檢視方式，目前為${S.mode==='group'?'門市群組':'門市'}">${S.mode==='group'?'門市群組':'門市'}<span aria-hidden="true">⌄</span></button>`}
+function groupHeading(g,count,total){return `<div class="group-heading"><strong>${esc(g)}</strong><span>${count} 間門市</span>${total!==undefined?`<b>${shortVal(S.chartMetric,total)}</b>`:''}</div>`}
 function tableView(rs){
- const cols=S.cols.map(k=>COLMAP[k]),label=S.mode==='region'?'區域':'門市／區域',span=1+(S.showCode&&S.mode==='name'?1:0)+cols.length;
- const row=(r,cls='')=>`<tr class="${cls}"><td class="name">${esc(r.name)}${r.count?` <span class="hint">${r.count} 間</span>`:''}</td>${S.showCode&&S.mode==='name'?`<td class="code">${r.code}</td>`:''}${cols.map(c=>`<td>${cell(c.k,r[c.k])}</td>`).join('')}</tr>`;
- const head=`<tr><th class="name" scope="col">${label}</th>${S.showCode&&S.mode==='name'?'<th class="code" scope="col">代碼</th>':''}${cols.map(c=>`<th scope="col" aria-sort="${S.sort.k===c.k?(S.sort.dir<0?'descending':'ascending'):'none'}"><button data-a="sort" data-k="${c.k}">${c.l}${IC.sort}</button></th>`).join('')}</tr>`;
- const total=row(sumRows(rs,'總計'),'total'); let groups='';
- if(S.mode==='region') groups=sorted(GROUPS.slice(1).map(g=>sumRows(rs.filter(r=>r.region===g),g,g)).filter(r=>r.count),S.sort.k,S.sort.dir).map(r=>row(r)).join('');
- else {
-  const ordered=sorted(rs,S.sort.k,S.sort.dir);
-  groups=GROUPS.slice(1).map(g=>{const subset=ordered.filter(r=>r.region===g);if(!subset.length)return'';return `<tr class="grp"><td class="name">${esc(g)}（${subset.length} 間）</td><td colspan="${span-1}"></td></tr>${subset.map((r,i)=>row(r,i%2?'alt':'')).join('')}`}).join('');
- }
+ const cols=S.cols.map(k=>COLMAP[k]),label=S.mode==='group'?'門市群組':'門市名稱',span=1+(S.showCode&&S.mode==='name'?1:0)+cols.length;
+ const row=(r,cls='')=>`<tr class="${cls}"><td class="name">${esc(r.name)}${r.count&&S.mode==='group'?` <span class="hint">${r.count} 間</span>`:''}</td>${S.showCode&&S.mode==='name'?`<td class="code">${r.code}</td>`:''}${cols.map(c=>`<td>${cell(c.k,r[c.k])}</td>`).join('')}</tr>`;
+ const head=`<tr><th class="name" scope="col">${label}</th>${S.showCode&&S.mode==='name'?'<th class="code" scope="col">代碼</th>':''}${cols.map(c=>`<th scope="col"><button data-a="sort" data-k="${c.k}">${c.l}${IC.sort}</button></th>`).join('')}</tr>`;
+ const total=row(sumRows(rs,'總計'),'total');
+ const groups=GROUPS.slice(1).map(g=>{const subset=sorted(rs.filter(r=>r.group===g),S.sort.k,S.sort.dir);if(!subset.length)return'';return S.mode==='group'?row(sumRows(subset,g,g)):`<tr class="grp"><td class="name">${esc(g)}（${subset.length} 間）</td><td colspan="${span-1}"></td></tr>${subset.map((r,i)=>row(r,i%2?'alt':'')).join('')}`}).join('');
  return `<div class="tbox"><table><thead>${head}</thead><tbody>${total}${groups}</tbody></table></div>`;
 }
-
-function rankingRows(rs){const list=S.mode==='region'?GROUPS.slice(1).map((g,i)=>{const sub=rs.filter(r=>r.region===g);return sub.length?{...sumRows(sub,g,g),code:'R'+i,region:g}:null}).filter(Boolean):rs;return list.sort((a,b)=>b[S.chartMetric]-a[S.chartMetric])}
+function rankingRows(rs){return S.mode==='group'?GROUPS.slice(1).map(g=>{const sub=rs.filter(r=>r.group===g);return sub.length?sumRows(sub,g,g):null}).filter(Boolean).sort((a,b)=>b[S.chartMetric]-a[S.chartMetric]):sorted(rs,S.chartMetric,-1)}
 function chartView(rs){
- const m=S.chartMetric,all=rankingRows(rs),list=S.allRanks?all:all.slice(0,10),mx=Math.max(.001,...all.map(r=>Math.abs(r[m]))),best=all[0];
- const item=(r,i)=>`<div class="report-rank"><div class="rank-title"><span>${i+1}</span><strong>${esc(r.name)}</strong><b>${shortVal(m,r[m])}</b></div><div class="rank-track ${m==='lwG'?'diverging':''}"><i style="${m==='lwG'?`left:${r[m]<0?50-Math.abs(r[m])/mx*50:50}%;width:${Math.abs(r[m])/mx*50}%`:`width:${Math.abs(r[m])/mx*100}%`};background:${r[m]<0?'var(--red)':'var(--orange)'}"></i></div>${m!=='lwG'&&r.lw>0?`<div class="rank-sub ${r.lwG<0?'neg':'pos'}">${r.lwG<0?'▼':'▲'} ${Math.abs(r.lwG*100).toFixed(1)}% <span>比上週同期</span></div>`:''}</div>`;
- let content='';
- if(S.mode==='group')content=GROUPS.slice(1).map(g=>{const sub=rs.filter(r=>r.region===g).sort((a,b)=>b[m]-a[m]);if(!sub.length)return'';const sum=sumRows(sub,g,g);return `<details class="region-group" open><summary><strong>${esc(g)}</strong><span>${sub.length} 間門市</span><b>${shortVal(m,sum[m])}</b></summary><div class="region-group-body">${sub.map((r,i)=>item(r,i+1)).join('')}</div></details>`}).join('');
- else content=`<div class="report-ranks">${list.map(item).join('')}</div>${all.length>10?`<button class="more" data-a="allranks">${S.allRanks?'收合至前 10 名':'顯示全部 '+all.length+' 項'}</button>`:''}`;
- return `<section class="gut report-chart" aria-label="門市排名圖表"><div class="report-chart-heading"><div><h2>${COLMAP[m].l}${S.mode==='region'?'區域總覽':'排名'}</h2><p>${S.mode==='group'?'依區域分段 · 可展開或收合':`由高到低 · ${all.length} ${S.mode==='region'?'個區域':'間門市'}`}</p></div><button class="ib" data-a="share" aria-label="分享這張排名圖">${RMSDemo.icons.share}</button></div>${best&&S.mode!=='group'?`<div class="rms-insight">${esc(best.name)}最高，${shortVal(m,best[m])}。</div>`:''}${content}</section>`;
+ const m=S.chartMetric,all=rankingRows(rs),mx=Math.max(.001,...all.map(r=>Math.abs(r[m])));
+ const item=(r,i)=>`<div class="report-rank"><div class="rank-title"><span>${i+1}</span><strong>${esc(r.name)}</strong><b>${shortVal(m,r[m])}</b></div><div class="rank-track ${COLMAP[m].t==='growth'?'diverging':''}"><i style="${COLMAP[m].t==='growth'?`left:${r[m]<0?50-Math.abs(r[m])/mx*50:50}%;width:${Math.abs(r[m])/mx*50}%`:`width:${Math.abs(r[m])/mx*100}%`};background:${r[m]<0?'var(--red)':'var(--orange)'}"></i></div>${m!=='lwG'&&r.lw>0?`<div class="rank-sub ${r.lwG<0?'neg':'pos'}">${r.lwG<0?'▼':'▲'} ${Math.abs(r.lwG*100).toFixed(1)}% <span>比上週同期</span></div>`:''}</div>`;
+ const groups=GROUPS.slice(1).map(g=>({name:g,items:sorted(rs.filter(r=>r.group===g),m,-1)})).filter(g=>g.items.length);
+ const content=S.mode==='group'?'<div class="report-ranks">'+all.map((r,i)=>item(r,i)).join('')+'</div>':groups.map(g=>`<section class="report-group" aria-label="${esc(g.name)}門市">${groupHeading(g.name,g.items.length,sumRows(g.items,g.name)[m])}<div class="report-ranks">${g.items.map((r,i)=>item(r,i)).join('')}</div></section>`).join('');
+ return `<section class="gut report-chart" aria-label="門市排名圖表"><div class="report-chart-heading"><div><div class="report-picker-row">${metricPicker()}${modePicker()}</div><p>${S.mode==='group'?'比較北／中／南門市群組總計':'門市依北／中／南分段，各組內由高到低'}</p></div><button class="ib" data-a="share" aria-label="分享這張排名圖">${RMSDemo.icons.share}</button></div>${content}</section>`;
 }
 function cardsView(rs){
- const card=r=>`<article class="store-card"><div class="store-card-head"><strong>${esc(r.name)}</strong><button class="ib" data-a="share" aria-label="分享${esc(r.name)}卡片">${RMSDemo.icons.share}</button></div><div class="store-card-total"><span>營業額</span><b>$${n0(r.rev)}</b><small class="${r.lwG<0?'neg':'pos'}">${r.lwG<0?'▼':'▲'} ${Math.abs(r.lwG*100).toFixed(1)}%　比上週同期</small></div><div class="store-card-metrics"><div><span>結帳單數</span><b>${n0(r.orders)}</b></div><div><span>平均客單價</span><b>$${n0(r.avg)}</b></div><div><span>作廢金額</span><b>$${n0(r.voidRev)}</b></div></div></article>`;
- let body='';
- if(S.mode==='region')body=rankingRows(rs).map(r=>`<article class="region-total-card"><span>${esc(r.name)}區總計</span><strong>$${n0(r.rev)}</strong><small>${n0(r.orders)} 筆結帳 · ${r.count} 間門市</small></article>`).join('');
- else if(S.mode==='group')body=GROUPS.slice(1).map(g=>{const sub=rs.filter(r=>r.region===g).sort((a,b)=>b.rev-a.rev);return sub.length?`<details class="region-group" open><summary><strong>${esc(g)}</strong><span>${sub.length} 間門市</span><b>$${n0(sumRows(sub,g,g).rev)}</b></summary><div class="region-group-body card-list">${sub.map(card).join('')}</div></details>`:''}).join('');
- else body=`<div class="card-list">${sorted(rs,'rev',-1).map(card).join('')}</div>`;
- return `<section class="gut report-chart" aria-label="門市多指標卡片"><div class="report-chart-heading"><div><h2>門市營運卡片</h2><p>${S.mode==='region'?'各區總計':'每店一張卡 · 同時查看多項指標'}</p></div><button class="ib" data-a="share" aria-label="分享門市卡片">${RMSDemo.icons.share}</button></div>${body}</section>`;
+ const card=r=>`<article class="store-card"><div class="store-card-head"><strong>${esc(r.name)}${r.count?` <small class="hint">${r.count} 間</small>`:''}</strong><button class="ib" data-a="share" aria-label="分享${esc(r.name)}卡片">${RMSDemo.icons.share}</button></div><div class="store-card-total"><span>營業額</span><b>$${n0(r.rev)}</b><small class="${r.lwG<0?'neg':'pos'}">${r.lwG<0?'▼':'▲'} ${Math.abs(r.lwG*100).toFixed(1)}%　比上週同期</small></div><div class="store-card-metrics"><div><span>結帳單數</span><b>${n0(r.orders)}</b></div><div><span>平均客單價</span><b>$${n0(r.avg)}</b></div><div><span>作廢金額</span><b>$${n0(r.voidRev)}</b></div></div></article>`;
+ const groups=GROUPS.slice(1).map(g=>({name:g,items:sorted(rs.filter(r=>r.group===g),'rev',-1)})).filter(g=>g.items.length);
+ const body=S.mode==='group'?'<div class="card-list">'+rankingRows(rs).map(card).join('')+'</div>':groups.map(g=>`<section class="report-group">${groupHeading(g.name,g.items.length)}<div class="card-list">${g.items.map(card).join('')}</div></section>`).join('');
+ return `<section class="gut report-chart" aria-label="門市多指標卡片"><div class="report-chart-heading"><div><div class="report-picker-row"><h2>門市營運卡片</h2>${modePicker()}</div><p>${S.mode==='group'?'各門市群組總計':'按北／中／南分段，每店一張卡'}</p></div><button class="ib" data-a="share" aria-label="分享門市卡片">${RMSDemo.icons.share}</button></div>${body}</section>`;
 }
 function trendView(rs){
  const m=S.chartMetric,list=rankingRows(rs),scope=list.find(r=>r.code===S.trendStore),t=scope||sumRows(rs,'全部門市總計');
@@ -465,7 +496,7 @@ function trendView(rs){
  const weight=[.78,.93,.88,1.04,.98,1.13,1.08],old=[.84,.87,.94,.96,1.02,.99,1.03],variation=(scope?parseInt(scope.code.replace(/\D/g,''),10)||1:3)*.013;
  const base=m==='lwG'?t.lwG:m==='avg'?t.avg:t[m]/(INCOMING.get('from')==='overview'?1:13);
  const values=weight.map((w,i)=>m==='lwG'?base+(w-1)*.2:Math.max(0,base*(w+Math.sin(i+variation)*.045))),previous=old.map((w,i)=>m==='lwG'?(w-1)*.14:Math.max(0,(m==='avg'?t.avg*.96:m==='rev'?t.lw/(INCOMING.get('from')==='overview'?1:13):base*.93)*w));
- const format=v=>m==='lwG'?(v*100).toFixed(1)+'%':m==='orders'?n0(v):'$'+n0(v),axis=v=>m==='lwG'?(v*100).toFixed(0)+'%':Math.abs(v)>=1000?(m==='orders'?'':'$')+(v/1000).toFixed(1)+'K':(m==='orders'?'':'$')+n0(v),idx=Math.max(0,Math.min(6,S.trendPoint));
+ const format=v=>shortVal(m,v),axis=v=>COLMAP[m].t==='pct'||COLMAP[m].t==='growth'?(v*100).toFixed(0)+'%':Math.abs(v)>=1000?(COLMAP[m].t==='int'?'':'$')+(v/1000).toFixed(1)+'K':shortVal(m,v),idx=Math.max(0,Math.min(6,S.trendPoint));
  return `<section class="gut report-chart" aria-label="逐日趨勢圖表"><div class="report-chart-heading"><div><h2>${COLMAP[m].l}逐日趨勢</h2><p>近 7 日 · 示意數據</p></div><button class="ib" data-a="share" aria-label="分享這張趨勢圖">${RMSDemo.icons.share}</button></div><label class="trend-store">查看<select data-a="trendstore" aria-label="趨勢門市"><option value="all">全部門市總計</option>${list.map(r=>`<option value="${esc(r.code)}" ${S.trendStore===r.code?'selected':''}>${esc(r.name)}</option>`).join('')}</select></label><div class="trend-readout"><span>${labels[idx]}</span><strong>${format(values[idx])}</strong><span class="hint">${esc(t.name)}</span></div>${RMSDemo.plot({values,previous,labels,format:axis,selected:idx,action:'trendpoint',label:COLMAP[m].l+'近7日示意趨勢，與上週同期比較'})}<div class="rms-legend"><span><i></i>本期（示意）</span><span><i class="previous"></i>上週同期（示意）</span></div><p class="trend-disclaimer">逐日數值為示意，用於展示趨勢閱讀方式，不代表真實歷史紀錄。</p></section>`;
 }
 
@@ -474,11 +505,13 @@ function desktopQuery(){
  return `<div class="desktop-query"><div class="desktop-tabs" role="group" aria-label="統計方式">${Object.keys(PERIOD).map(k=>`<button data-a="desktop-period" data-v="${k}" aria-pressed="${S.period===k}">${PERIOD[k].l}</button>`).join('')}</div><div class="desktop-row"><span>日期</span><label><input type="radio" name="desktop-dt" data-a="desktop-dt" value="book" ${S.dateType==='book'?'checked':''}>入帳日期</label><label><input type="radio" name="desktop-dt" data-a="desktop-dt" value="sale" ${S.dateType==='sale'?'checked':''}>銷售日期</label><label><input type="text" value="${esc(PERIOD[S.period].range)}" aria-label="日期範圍" readonly></label>ⓘ</div><div class="desktop-row"><label>集團名稱<select aria-label="集團名稱"><option>示意集團</option></select></label><label>品牌名稱<select aria-label="品牌名稱"><option>示意品牌</option></select></label><label>門市篩選<select id="desktop-group" aria-label="門市篩選">${GROUPS.map(g=>`<option ${S.group===g?'selected':''}>${g}</option>`).join('')}</select></label></div><div class="desktop-row"><button class="btn" data-a="refresh">更新時間</button><button class="btn primary" data-a="desktop-search">搜尋</button></div></div>`;
 }
 function desktopTable(rs){
- const list=sorted(rs,S.sort.k,S.sort.dir),pageSize=S.pageSize||10,maxPage=Math.max(1,Math.ceil(list.length/pageSize));S.page=Math.min(S.page,maxPage);
- const visible=list.slice((S.page-1)*pageSize,S.page*pageSize), cols=COLS, total=sumRows(rs,'總計');
- const tr=(r,cl='')=>`<tr class="${cl}"><td class="name">${esc(r.name)}</td>${cols.map(c=>`<td>${cell(c.k,r[c.k])}</td>`).join('')}</tr>`;
- const ordered=visible.map((r,i)=>tr(r,i%2?'alt':'')).join('');
- return `<div class="desktop-table"><table><thead><tr><th class="name">門市名稱</th>${cols.map(c=>`<th><button data-a="sort" data-k="${c.k}">${c.l}</button></th>`).join('')}</tr></thead><tbody>${tr(total,'total')}${ordered}</tbody></table></div><div class="desktop-pager"><div><button data-a="page" data-v="1" aria-label="第一頁">«</button><button data-a="page" data-v="${Math.max(1,S.page-1)}" aria-label="上一頁">‹</button>${Array.from({length:Math.min(maxPage,5)},(_,i)=>`<button data-a="page" data-v="${i+1}" ${S.page===i+1?'aria-current="page"':''}>${i+1}</button>`).join('')}<button data-a="page" data-v="${Math.min(maxPage,S.page+1)}" aria-label="下一頁">›</button><button data-a="page" data-v="${maxPage}" aria-label="最後一頁">»</button></div><label>每頁筆數：<select data-a="psize">${[10,20,50].map(v=>`<option ${pageSize===v?'selected':''}>${v}</option>`).join('')}</select></label><span>目前：${list.length?(S.page-1)*pageSize+1:0}～${Math.min(S.page*pageSize,list.length)}　總筆數：${list.length}</span></div>`;
+ const all=S.mode==='group'?GROUPS.slice(1).map(g=>{const subset=rs.filter(r=>r.group===g);return subset.length?sumRows(subset,g,g):null}).filter(Boolean):GROUPS.slice(1).flatMap(g=>sorted(rs.filter(r=>r.group===g),S.sort.k,S.sort.dir));
+ const pageSize=S.pageSize||10,maxPage=Math.max(1,Math.ceil(all.length/pageSize));S.page=Math.min(S.page,maxPage);
+ const visible=all.slice((S.page-1)*pageSize,S.page*pageSize),cols=COLS,total=sumRows(rs,'總計');
+ const tr=(r,cl='')=>`<tr class="${cl}"><td class="name">${esc(r.name)}${r.count&&S.mode==='group'?` <small>${r.count} 間</small>`:''}</td>${cols.map(c=>`<td>${cell(c.k,r[c.k])}</td>`).join('')}</tr>`;
+ let body='',last='';
+ visible.forEach((r,i)=>{if(S.mode==='name'&&r.group!==last){body+=`<tr class="grp"><td class="name">${esc(r.group)}</td><td colspan="${cols.length}"></td></tr>`;last=r.group}body+=tr(r,i%2?'alt':'')});
+ return `<div class="desktop-table"><table><thead><tr><th class="name">${S.mode==='group'?'門市群組':'門市名稱'}</th>${cols.map(c=>`<th><button data-a="sort" data-k="${c.k}">${c.l}</button></th>`).join('')}</tr></thead><tbody>${tr(total,'total')}${body}</tbody></table></div><div class="desktop-pager"><div><button data-a="page" data-v="1" aria-label="第一頁">«</button><button data-a="page" data-v="${Math.max(1,S.page-1)}" aria-label="上一頁">‹</button>${Array.from({length:Math.min(maxPage,5)},(_,i)=>`<button data-a="page" data-v="${i+1}" ${S.page===i+1?'aria-current="page"':''}>${i+1}</button>`).join('')}<button data-a="page" data-v="${Math.min(maxPage,S.page+1)}" aria-label="下一頁">›</button><button data-a="page" data-v="${maxPage}" aria-label="最後一頁">»</button></div><label>每頁筆數：<select data-a="psize">${[10,20,50].map(v=>`<option ${pageSize===v?'selected':''}>${v}</option>`).join('')}</select></label><span>目前：${all.length?(S.page-1)*pageSize+1:0}～${Math.min(S.page*pageSize,all.length)}　總筆數：${all.length}</span></div>`;
 }
 function desktopCharts(rs){
  const top=sorted(rs,'rev',-1).slice(0,10),max=Math.max(...top.map(r=>r.rev),1),sum=sumRows(rs,'總計');
@@ -486,7 +519,7 @@ function desktopCharts(rs){
  return `<div class="desktop-charts"><section class="desktop-chart"><div class="desktop-chart-head">營業額＆主餐數量(總計)<button class="ib" data-a="share" aria-label="分享圖表">⇩</button></div><div class="desktop-chart-body"><div class="bar" style="height:220px;background:#55afb0;max-width:75%"><span>${PERIOD[S.period].range}</span></div></div></section><section class="desktop-chart"><div class="desktop-chart-head">營業額＆銷售數量(總計)<button class="ib" data-a="share" aria-label="分享圖表">⇩</button></div><div class="desktop-chart-body">${top.map(bar).join('')}</div></section><section class="desktop-chart"><div class="desktop-chart-head">同期比較(總計)<button class="ib" data-a="share" aria-label="分享圖表">⇩</button></div><div class="desktop-chart-body"><div class="bar" style="height:190px;background:#788ed0"><span>本期</span></div><div class="bar" style="height:155px;background:#ffd675"><span>上週同期</span></div></div></section><section class="desktop-chart"><div class="desktop-chart-head">用餐方式＆營業額(總計)<button class="ib" data-a="share" aria-label="分享圖表">⇩</button></div><div class="desktop-chart-body"><div class="legend"><div><i></i>立客點內用</div><div><i></i>內用</div><div><i></i>外帶</div><div>總營業額 ${n0(sum.rev)}</div></div><div class="donut"></div></div></section></div>`;
 }
 function desktopPage(rs){
- return `<div class="desktop-report">${desktopQuery()}<div class="desktop-band">顯示設定</div><div class="desktop-settings"><div class="desktop-row"><span>門市顯示</span><label><input type="radio" name="desktop-mode" data-a="desktop-mode" value="group" ${S.mode==='group'?'checked':''}>門市群組</label><label><input type="radio" name="desktop-mode" data-a="desktop-mode" value="name" ${S.mode==='name'?'checked':''}>門市名稱</label><select aria-label="門市層級" data-a="desktop-dimension"><option value="name" ${S.mode==='name'?'selected':''}>全部</option><option value="region" ${S.mode==='region'?'selected':''}>區域</option></select><label><input type="checkbox" data-a="code" ${S.showCode?'checked':''}>門市代碼</label></div><div class="desktop-row"><span>統計欄位</span><button class="btn" data-a="cols">數量：${S.cols.length}</button></div></div><div class="desktop-band">查詢結果</div><div class="desktop-results"><div class="desktop-tools"><label class="search">${IC.search}<input id="desktop-filter" value="${esc(S.filter)}" placeholder="過濾條件"></label><button class="btn" data-a="settings">進階過濾</button><div class="seg"><button aria-pressed="true">合併</button><button>不合併</button></div><button class="btn">全螢幕顯示</button><span class="sp"></span><button class="btn" data-a="share">下載</button></div>${desktopTable(rs)}</div>${desktopCharts(rs)}<p class="gut foot">此頁為 Demo 示意資料；桌面版依 RMS 介面結構呈現。</p></div>`;
+ return `<div class="desktop-report">${desktopQuery()}<div class="desktop-band">顯示設定</div><div class="desktop-settings"><div class="desktop-row"><span>門市顯示</span><label><input type="radio" name="desktop-mode" data-a="desktop-mode" value="group" ${S.mode==='group'?'checked':''}>門市群組</label><label><input type="radio" name="desktop-mode" data-a="desktop-mode" value="name" ${S.mode==='name'?'checked':''}>門市名稱</label><label><input type="checkbox" data-a="code" ${S.showCode?'checked':''}>門市代碼</label></div><div class="desktop-row"><span>統計欄位</span><button class="btn" data-a="cols">數量：${S.cols.length}</button></div></div><div class="desktop-band">查詢結果</div><div class="desktop-results"><div class="desktop-tools"><label class="search">${IC.search}<input id="desktop-filter" value="${esc(S.filter)}" placeholder="過濾條件"></label><button class="btn" data-a="settings">進階過濾</button><div class="seg"><button aria-pressed="true">合併</button><button>不合併</button></div><button class="btn">全螢幕顯示</button><span class="sp"></span><button class="btn" data-a="share">下載</button></div>${desktopTable(rs)}</div>${desktopCharts(rs)}<p class="gut foot">此頁為 Demo 示意資料；桌面版依 RMS 介面結構呈現。</p></div>`;
 }
 
 function page(){const rs=rows();return shell(`${summaryBar()}<main class="report-main">${kpis(rs)}${toolbar()}${rs.length?(S.view==='table'?`<section class="report-chart" aria-label="報表資料表"><div class="gut report-chart-heading"><div><h2>門市營收明細</h2><p>核對完整欄位與精確數字</p></div><button class="ib" data-a="share" aria-label="分享這份資料表">${RMSDemo.icons.share}</button></div>${tableView(rs)}</section>`:S.view==='trend'?trendView(rs):S.view==='cards'?cardsView(rs):chartView(rs)):`<p class="gut empty-result">沒有符合「${esc(S.filter)}」的門市。清除搜尋條件即可看到全部。</p>`}<p class="gut foot">結論建議版 · 數字為示意資料。</p></main>${desktopPage(rs)}`)}
@@ -494,8 +527,15 @@ function page(){const rs=rows();return shell(`${summaryBar()}<main class="report
 // ---------- sheets / dialogs ----------
 const dlg=(id,title,body)=>`<div class="overlay" data-a="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="${id}"><div class="dhead"><h2 id="${id}">${title}</h2><button class="ib" data-a="close" aria-label="關閉">${IC.close}</button></div>${body}</div></div>`;
 function querySheet(){return dlg('q-h','查詢條件',`<div class="qform" style="padding-block:12px 0">${formFields(draft)}</div><div style="display:flex;gap:10px;margin-top:18px"><button class="btn" data-a="refresh">更新時間</button><button class="btn solid" style="flex:1" data-a="search">搜尋</button></div><p class="hint" style="margin-top:10px">搜尋後條件會收合到畫面上方，並記住這次的設定。</p>`)}
-function settingsSheet(){return dlg('s-h','顯示設定',`<span class="lbl">檢視層級</span><div class="opts" style="grid-template-columns:1fr 1fr 1fr"><button class="opt" data-a="set" data-k="mode" data-v="name" aria-pressed="${S.mode==='name'}">按門市</button><button class="opt" data-a="set" data-k="mode" data-v="group" aria-pressed="${S.mode==='group'}">門市群組</button><button class="opt" data-a="set" data-k="mode" data-v="region" aria-pressed="${S.mode==='region'}">按區域</button></div><label class="ck" style="margin-top:12px"><input type="checkbox" data-a="code" ${S.showCode?'checked':''}>顯示門市代碼</label><span class="lbl">統計欄位</span><button class="btn" style="width:100%;margin-top:8px" data-a="cols">已選 ${S.cols.length} / ${COLS.length} 欄，點此調整</button><button class="btn solid" style="width:100%;margin-top:18px" data-a="close">完成</button>`)}
+function settingsSheet(){return dlg('s-h','顯示設定',`<span class="lbl">檢視方式</span><div class="opts" style="grid-template-columns:1fr 1fr"><button class="opt" data-a="set" data-k="mode" data-v="name" aria-pressed="${S.mode==='name'}">按門市</button><button class="opt" data-a="set" data-k="mode" data-v="group" aria-pressed="${S.mode==='group'}">門市群組總計</button></div><label class="ck" style="margin-top:12px"><input type="checkbox" data-a="code" ${S.showCode?'checked':''}>顯示門市代碼</label><span class="lbl">統計欄位</span><button class="btn" style="width:100%;margin-top:8px" data-a="cols">已選 ${S.cols.length} / ${COLS.length} 欄，點此調整</button><button class="btn solid" style="width:100%;margin-top:18px" data-a="close">完成</button>`)}
 
+function metricSheet(){
+ const groups=[['營收與訂單',['rev','orders','avg']],['作廢',['voidN','voidNPct','voidRev','voidRevPct']],['同期比較',['lw','lwG','lm','lmG','ly','lyG']]];
+ return dlg('metric-h','選取指標',`<p class="hint">圖表一次呈現一個指標。</p>${groups.map(([name,keys])=>`<h3 class="picker-category">${name}</h3><div class="picker-options">${keys.map(k=>`<button data-a="metric-choice" data-v="${k}" aria-pressed="${S.chartMetric===k}">${COLMAP[k].l}<span>${S.chartMetric===k?'✓':''}</span></button>`).join('')}</div>`).join('')}`);
+}
+function modeSheet(){
+ return dlg('mode-h','檢視方式',`<p class="hint">北／中／南是門市分段，選擇如何比較資料。</p><div class="picker-options"><button data-a="mode-choice" data-v="name" aria-pressed="${S.mode==='name'}">按門市比較<span>${S.mode==='name'?'✓':''}</span></button><button data-a="mode-choice" data-v="group" aria-pressed="${S.mode==='group'}">門市群組總計<span>${S.mode==='group'?'✓':''}</span></button></div>`);
+}
 function colsSheet(){
   return dlg('c-h','統計欄位',`<p class="hint" style="margin:6px 0 0">預設只顯示最常看的 4 欄。手機上建議 3–4 欄。</p><div class="colgrid">${COLS.map(c=>`<label class="ck"><input type="checkbox" data-a="colck" data-k="${c.k}" ${draft.cols.includes(c.k)?'checked':''}>${c.l}</label>`).join('')}</div>
   <div style="display:flex;gap:10px;margin-top:16px"><button class="btn" data-a="coldef">恢復預設</button><button class="btn solid" style="flex:1" data-a="colsave">套用</button></div>`)}
@@ -522,12 +562,12 @@ let tt; function toast(m){toastEl.textContent=m;toastEl.hidden=false;clearTimeou
 function hashOf(){return ['r',S.period,S.dateType,GROUPS.indexOf(S.group),S.mode,S.view,S.chartMetric,S.trendStore].join('-')}
 function readHash(){const p=(location.hash||'').slice(1).split('-');if(p[0]!=='r'||p.length<6)return false;
   if(PERIOD[p[1]])S.period=p[1]; if(DATETYPE[p[2]])S.dateType=p[2]; if(GROUPS[+p[3]])S.group=GROUPS[+p[3]];
-  if(['name','group','region'].includes(p[4]))S.mode=p[4]; if(['table','chart','cards','trend'].includes(p[5]))S.view=p[5];if(['rev','orders','avg','lwG'].includes(p[6]))S.chartMetric=p[6];if(p[7])S.trendStore=p[7]; S.qOpen=false; S.remembered=false; return true}
+  if(['name','group'].includes(p[4]))S.mode=p[4]; if(['table','chart','cards','trend'].includes(p[5]))S.view=p[5];if(COLMAP[p[6]])S.chartMetric=p[6];if(p[7])S.trendStore=p[7]; S.qOpen=false; S.remembered=false; return true}
 function render(keepFocus){
   const f=document.activeElement&&document.activeElement.id; const pos=f==='filter'?document.activeElement.selectionStart:null;
   root.innerHTML=page();
   if(phone&&S.qOpen&&!S.sheet) S.sheet='q';
-  layer.innerHTML=S.sheet==='q'?querySheet():S.sheet==='settings'?settingsSheet():S.sheet==='cols'?colsSheet():S.sheet==='share'?shareSheet():'';
+  layer.innerHTML=S.sheet==='q'?querySheet():S.sheet==='settings'?settingsSheet():S.sheet==='cols'?colsSheet():S.sheet==='metric'?metricSheet():S.sheet==='mode'?modeSheet():S.sheet==='share'?shareSheet():'';
   if(f){const el=document.getElementById(f);if(el){el.focus();if(pos!==null)el.setSelectionRange(pos,pos)}}
   const h='#'+hashOf(); if(location.hash!==h){try{history.replaceState(null,'',h)}catch(e){}}
 }
@@ -552,6 +592,10 @@ document.addEventListener('click',e=>{
   else if(a==='page'){S.page=+b.dataset.v}
   else if(a==='more'){S.shown+=10}
   else if(a==='settings'){S.sheet='settings'}
+   else if(a==='metricpicker'){S.sheet='metric'}
+   else if(a==='modepicker'){S.sheet='mode'}
+   else if(a==='metric-choice'){S.chartMetric=b.dataset.v;S.sheet=null;save()}
+   else if(a==='mode-choice'){S.mode=b.dataset.v;S.sheet=null;save()}
   else if(a==='cols'){draft={cols:S.cols.slice()};S.sheet='cols'}
   else if(a==='coldef'){draft.cols=DEF.cols.slice()}
   else if(a==='colsave'){if(!draft.cols.length){toast('至少要選 1 個欄位');return}S.cols=COLS.map(c=>c.k).filter(k=>draft.cols.includes(k));S.sheet=phone?'settings':null;save();toast(`已套用 ${S.cols.length} 個欄位`)}
@@ -569,7 +613,6 @@ document.addEventListener('change',e=>{
   const t=e.target, a=t.dataset&&t.dataset.a;
   if(a==='desktop-dt'){S.dateType=t.value;save()}
    else if(a==='desktop-mode'){S.mode=t.value;save()}
-   else if(a==='desktop-dimension'){S.mode=t.value;save()}
    else if(a==='dp'){draft[t.dataset.k]=t.dataset.v}
   else if(a==='dsel'){draft[t.dataset.k]=t.value;return}
   else if(a==='metric'){S.chartMetric=t.value;S.trendPoint=6;save()}
