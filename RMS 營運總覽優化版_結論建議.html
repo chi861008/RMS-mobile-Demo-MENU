@@ -1,0 +1,303 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>RMS 營運總覽・結論建議版</title><meta name="rms-conclusions-version" content="1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: RMS shell (grey title bar + straight condition bar) over a single column of cards on phone; 2 columns from 760px */
+:root{
+  --bg:#F4F4F2; --surface:#FFFFFF; --sunk:#EEEEEB; --line:#E2E2DE; --fg:#222222; --muted:#666666; --hint:#8A8A8A;
+  --title:#616161; --title-fg:#FFFFFF;
+  --orange:#F7B36A; --orange-ink:#8A4B00; --orange-soft:#FFF1E0;
+  --bar:#F0A04B; --bar-soft:#F8D9B4; --up:#1F7A4A; --down:#C23B32;
+  --scrim:rgba(20,20,20,.45); --toast:#222; --toast-fg:#fff;
+  --font:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141414; --surface:#1F1F1F; --sunk:#262626; --line:#353535; --fg:#EDEDED; --muted:#AAAAAA; --hint:#8E8E8E;
+  --title:#3A3A3A; --title-fg:#F2F2F2; --orange:#E59A45; --orange-ink:#FFD2A1; --orange-soft:#3A2A17;
+  --bar:#E59A45; --bar-soft:#5A4024; --up:#5CC78E; --down:#F07A62; --scrim:rgba(0,0,0,.6); --toast:#EDEDED; --toast-fg:#141414; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141414; --surface:#1F1F1F; --sunk:#262626; --line:#353535; --fg:#EDEDED; --muted:#AAAAAA; --hint:#8E8E8E;
+  --title:#3A3A3A; --title-fg:#F2F2F2; --orange:#E59A45; --orange-ink:#FFD2A1; --orange-soft:#3A2A17;
+  --bar:#E59A45; --bar-soft:#5A4024; --up:#5CC78E; --down:#F07A62; --scrim:rgba(0,0,0,.6); --toast:#EDEDED; --toast-fg:#141414; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.gut{padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--title)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6}
+.titlebar{background:var(--title);color:var(--title-fg);display:flex;align-items:center;gap:8px;min-height:52px}
+.titlebar h1{flex:1;text-align:center;font-size:17px;font-weight:500;margin:0}
+.ib{width:44px;height:44px;display:grid;place-items:center;border:0;background:none;color:inherit;border-radius:8px}
+.ib svg{width:22px;height:22px}
+.cond{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;border:0;border-bottom:1px solid var(--orange);background:var(--orange-soft);color:var(--orange-ink);text-align:left}
+.cond .d{font-weight:700;white-space:nowrap}
+.cond .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cond .e{flex:none;font-weight:700;padding-left:10px;border-left:1px solid var(--orange);display:inline-flex;align-items:center;gap:2px}
+.cond svg{width:16px;height:16px;flex:none}
+.sync{display:flex;align-items:center;gap:10px;padding-block:10px;color:var(--muted);font-size:12.5px}
+.sync .sp{flex:1}
+.tog{position:relative;width:40px;height:24px;border-radius:12px;border:0;background:var(--line);flex:none}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--surface);transition:left .15s}
+.tog[aria-checked="true"]{background:var(--up)}
+.tog[aria-checked="true"]::after{left:19px}
+.chip{display:inline-flex;align-items:center;gap:4px;min-height:32px;padding:0 10px;border:1px solid var(--line);border-radius:16px;background:var(--surface);font-size:12.5px}
+.chip svg{width:15px;height:15px}
+main{display:grid;gap:12px;padding-bottom:96px}
+@media (min-width:760px){main{grid-template-columns:1fr 1fr;align-items:start}.span{grid-column:1 / -1}.kgrid{grid-template-columns:repeat(4,1fr)}.hours svg{max-width:460px}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.ch{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
+.ch h2{font-size:16px;margin:0}
+.ch p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.ch .grow{flex:1;min-width:0}
+.more{width:36px;height:36px;margin:-6px -8px 0 0;border:0;background:none;border-radius:8px;color:var(--muted);display:grid;place-items:center}
+.more svg{width:18px;height:18px}
+.go{margin:12px -16px -14px;border-top:1px solid var(--line)}
+.go a,.go button{display:flex;align-items:center;justify-content:flex-end;width:100%;min-height:44px;padding:0 16px;border:0;background:none;color:var(--orange-ink);font-size:13.5px;font-weight:700;text-decoration:none;border-radius:0 0 12px 12px}
+.go a:hover,.go button:hover{background:var(--orange-soft)}
+.pv{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:6px}
+.pv .hd{background:var(--title);color:var(--title-fg);padding:10px 14px}
+.pv .hd b{display:block;font-size:15px}
+.pv .hd span{font-size:12px;opacity:.85}
+.pv .bd{padding:12px 14px;pointer-events:none}
+.pv .nt{margin:0 14px 12px;padding:8px 10px;border-radius:8px;background:#FFF1C2;color:#3A2A00;font-size:13px}
+.pv .ft{font-size:11px;color:var(--hint);padding:0 14px 10px}
+textarea{width:100%;min-height:64px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;color:inherit;background:var(--surface);margin-top:6px}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.acts button{min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:13px}
+.up{color:var(--up)} .down{color:var(--down)}
+.hero .v{font-size:34px;font-weight:700;line-height:1.15}
+.hero .row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:4px;font-size:13px}
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.k{border-top:1px solid var(--line);padding-top:10px}
+.k .l{font-size:12.5px;color:var(--muted)}
+.k .v{font-size:20px;font-weight:700;line-height:1.25}
+.k .c{font-size:12px;margin-top:1px}
+.k .c span{color:var(--hint)}
+.bars{display:flex;flex-direction:column;gap:10px}
+.hb{display:grid;grid-template-columns:84px 1fr 92px;gap:8px;align-items:center;font-size:13px}
+.hb .track{height:12px;border-radius:6px;background:var(--sunk);overflow:hidden}
+.hb .track i{display:block;height:100%;background:var(--bar);border-radius:6px}
+.hb .n{text-align:right}
+.hb .n small{display:block;color:var(--muted);font-size:11.5px}
+.note{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.hours svg{width:100%;height:auto;display:block}
+.readout{display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:4px;min-height:24px}
+.readout b{font-size:18px}
+.stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--sunk)}
+.stack i{display:block;height:100%}
+.empty{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--sunk);font-size:13px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.seg button{min-height:34px;padding:0 14px;border:0;background:var(--surface);font-size:13px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--orange);color:#3A1E00;font-weight:700}
+.rk{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
+.rk:first-child{border-top:0}
+.rk .r{color:var(--muted);text-align:right}
+.rk .nm{min-width:0}
+.rk .amt{text-align:right;white-space:nowrap}
+.lnk{border:0;background:none;padding:0;color:var(--orange-ink);font-size:13px;text-decoration:underline;text-underline-offset:3px;min-height:32px}
+.fab{position:fixed;right:max(16px, env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:48px;height:48px;border-radius:24px;border:0;background:var(--title);color:var(--title-fg);box-shadow:0 6px 16px rgba(0,0,0,.25);display:grid;place-items:center;transition:transform .2s,opacity .2s;z-index:5;font-weight:700;font-size:13px}
+.fab.hide{transform:translateY(80px);opacity:0}
+.overlay{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:16px 16px 0 0;padding:16px 18px max(20px, calc(env(safe-area-inset-bottom,0px) + 14px));max-height:90vh;overflow:auto}
+.sheet h3{margin:0 0 8px;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.opt{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;font-size:15px}
+.opt:last-child{border-bottom:0}
+.opt small{display:block;color:var(--muted);font-size:12px}
+.fl{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.fl label{font-size:12.5px;color:var(--muted)}
+.fl select{min-height:44px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:var(--surface);font:inherit;color:inherit}
+.primary{width:100%;min-height:46px;border:0;border-radius:10px;background:var(--orange);color:#3A1E00;font-weight:700;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast);color:var(--toast-fg);padding:10px 16px;border-radius:10px;font-size:13px;z-index:30;max-width:calc(100% - 32px)}
+.changes{margin-top:8px}
+.changes summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+.ctab{width:100%;border-collapse:collapse;font-size:13px}
+.ctab th,.ctab td{text-align:left;vertical-align:top;padding:8px 6px;border-top:1px solid var(--line)}
+.ctab th{color:var(--muted);font-weight:500;font-size:12px}
+.foot{color:var(--hint);font-size:12px;padding-block:4px 16px}
+@media (prefers-reduced-motion: reduce){.fab,.tog::after{transition:none}}
+html{scroll-behavior:smooth}*{box-sizing:border-box}button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}section,[id^="h-"]{scroll-margin-top:150px}.rms-icon{width:22px;height:22px;vertical-align:middle}.rms-overlay{position:fixed;inset:0;z-index:80;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}.rms-panel{background:var(--surface);color:var(--fg);width:min(100%,560px);max-height:94dvh;overflow:auto;border-radius:20px 20px 0 0;padding:20px max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom))}.rms-head{display:flex;align-items:center;gap:12px;justify-content:space-between}.rms-head h2{margin:0;font-size:19px}.rms-close{border:0;background:var(--sunk,var(--stripe));border-radius:50%;width:40px;height:40px;display:grid;place-items:center;flex:none;color:inherit}.rms-muted{color:var(--muted);font-size:13px;line-height:1.6}.rms-share-info{display:flex;gap:12px;padding:16px 0;margin-bottom:4px;align-items:center}.rms-share-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:12px;background:var(--orange-soft);color:var(--orange-ink);flex:none}.rms-share-info strong{display:block;font-size:16px}.rms-share-info p{margin:3px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}.rms-targets{display:grid;grid-template-columns:1fr 1fr;gap:10px}.rms-target{min-height:58px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px;color:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px}.rms-target.line{grid-column:1/-1;background:#06a54b;border-color:#06a54b;color:white;font-size:16px;min-height:60px}.rms-line-badge{border-radius:8px;background:white;color:#07863f;padding:3px 6px;font-size:11px;font-weight:700}.rms-preview{margin-top:20px;border-top:1px solid var(--line);padding-top:10px}.rms-preview summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;font-size:14px;color:var(--orange-ink);font-weight:700}.rms-preview summary::after{content:'⌄';font-size:19px}.rms-imagecard{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:8px}.rms-imagehead{background:var(--title);color:var(--title-fg);padding:14px 16px;font-size:12px;line-height:1.6}.rms-imagehead strong{display:block;font-size:16px}.rms-imagebody{padding:16px;overflow:hidden;pointer-events:none}.rms-imagebody .rms-share-hide,.rms-imagebody button,.rms-imagebody select{display:none!important}.rms-imagebody .gut{padding-left:0;padding-right:0}.rms-imagebody .card{border:0;padding:0}.rms-imagebody .go{display:none}.rms-imagebody table{font-size:11px}.rms-imagebody svg{width:100%;height:auto}.rms-image-note{padding:10px 12px;margin:0 14px 14px;background:var(--orange-soft);font-size:13px;white-space:pre-wrap}.rms-preview label{display:block;font-size:13px;margin-top:14px}.rms-preview textarea{width:100%;margin-top:6px;min-height:68px;font:inherit;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--surface);color:inherit}.rms-downloads{margin-top:12px;display:flex;gap:8px}.rms-downloads button{flex:1;min-height:42px;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px}.rms-toast{position:fixed;z-index:100;bottom:32px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);background:var(--toast);color:var(--toast-fg);padding:12px 16px;border-radius:12px;font-size:13px;text-align:center}.rms-drawer-wrap{justify-content:flex-start;align-items:stretch}.rms-drawer{width:min(340px,88vw);height:100dvh;background:var(--surface);padding:20px;overflow:auto;box-shadow:8px 0 40px #0002}.rms-drawer input{margin:18px 0 12px;width:100%;min-height:44px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:0 12px;color:inherit;font:inherit}.rms-navlink{display:block;padding:14px 12px;text-decoration:none;color:var(--fg);border-radius:10px;margin-bottom:4px;border:1px solid transparent;font-size:15px}.rms-navlink small{display:block;font-size:12px;color:var(--muted);margin-top:3px}.rms-navlink:hover,.rms-navlink[aria-current="page"]{background:var(--orange-soft);border-color:var(--orange);color:var(--orange-ink)}.rms-ai{position:fixed;inset:0;z-index:80;background:var(--bg);height:100dvh;display:flex;flex-direction:column;color:var(--fg)}.rms-ai-header{flex:none;min-height:66px;border-bottom:1px solid var(--line);padding:12px max(18px,calc((100vw - 800px)/2));display:flex;align-items:center;gap:12px;background:var(--surface)}.rms-ai-header strong{display:block;font-size:17px}.rms-ai-header small{display:block;font-size:11px;color:var(--muted);margin-top:2px}.rms-ai-label{font-size:12px;font-weight:700;border-radius:8px;background:var(--orange-soft);color:var(--orange-ink);padding:9px}.rms-ai-thread{flex:1;overflow:auto;padding:30px max(18px,calc((100vw - 760px)/2));min-height:0}.rms-ai-welcome{padding:42px 0 24px}.rms-ai-welcome h2{font-size:25px;line-height:1.4;margin:0 0 10px}.rms-ai-suggestions{display:flex;gap:10px;flex-direction:column;align-items:flex-start;margin-top:22px}.rms-ai-suggestions button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:inherit;text-align:left;min-height:46px}.rms-message{padding:14px 16px;border-radius:16px;margin:14px 0;line-height:1.8;font-size:14px;white-space:pre-wrap}.rms-message.user{margin-left:15%;background:var(--orange-soft);color:var(--orange-ink)}.rms-message.assistant{background:var(--surface);border:1px solid var(--line);margin-right:5%}.rms-ai-compose{padding:12px max(18px,calc((100vw - 760px)/2)) max(18px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surface)}.rms-ai-compose form{display:flex;gap:10px;align-items:center}.rms-ai-compose textarea{flex:1;resize:none;height:52px;min-height:52px;max-height:120px;font:inherit;padding:14px;border:1px solid var(--line);border-radius:14px;margin:0;color:inherit;background:var(--bg)}.rms-ai-compose button{width:48px;height:48px;border:0;background:var(--orange);color:#3a1e00;border-radius:12px;font:inherit;font-size:20px}.rms-ai-compose p{margin:8px 0 0;font-size:11px;color:var(--muted);text-align:center}.rms-linechart{width:100%;height:auto;display:block;overflow:visible}.rms-legend{display:flex;gap:16px;justify-content:center;align-items:center;font-size:11px;color:var(--muted);margin-top:8px}.rms-legend i{display:inline-block;width:20px;border-top:3px solid var(--orange);margin-right:5px;vertical-align:middle}.rms-legend .previous{border-color:#969696;border-top-style:dashed}.rms-fab{position:fixed;bottom:20px;right:18px;width:48px;height:48px;border:0;background:var(--title);color:var(--title-fg);font-weight:700;border-radius:50%;box-shadow:0 5px 18px #0003;z-index:9}.rms-insight{border-left:3px solid var(--orange);background:var(--orange-soft);color:var(--orange-ink);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;line-height:1.6}.rms-panel button:focus-visible,.rms-drawer a:focus-visible,.rms-ai button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}@media(min-width:760px){.rms-overlay:not(.rms-drawer-wrap){align-items:center;padding:24px}.rms-panel{border-radius:20px;max-height:90dvh}.rms-ai-thread{padding-top:40px}}
+.rms-fab{transition:transform .2s,opacity .2s}.rms-fab.hide{transform:translateY(90px);opacity:0;pointer-events:none}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.rms-fab{transition:none}}
+
+.cond{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:1px 10px;padding-top:8px;padding-bottom:8px}.cond>svg{grid-row:1/3}.cond .d{grid-column:2;white-space:normal;font-size:13px}.cond .t{grid-column:2;white-space:normal;overflow:visible;font-size:11px}.cond .e{grid-column:3;grid-row:1/3}.overview-ranks{display:flex;flex-direction:column;gap:14px}.overview-rank>div:first-child{display:flex;gap:8px;align-items:center;font-size:13px}.overview-rank strong{flex:1;font-weight:500}.overview-rank b{font-weight:700}.rank-index{color:var(--muted);font-size:11px;width:14px}.overview-track{height:9px;background:var(--sunk);border-radius:5px;overflow:hidden;margin:7px 0 3px}.overview-track i{display:block;height:100%;background:var(--orange);border-radius:5px}.overview-rank small{font-size:11px;color:var(--muted);display:block;text-align:right}.hero .v{font-size:36px}.hero .k .v{font-size:20px}.hours .rms-insight{margin-top:16px}.sync{font-size:11px;gap:7px}.sync .chip{min-height:30px;font-size:11px}.sync .tog{width:36px;height:22px}.sync .tog:after{width:16px;height:16px}.sync .tog[aria-checked="true"]:after{left:17px}.rms-imagebody .hero .v{font-size:28px}@media(min-width:1100px){main,.sync{max-width:1240px;margin:0 auto}.titlebar,.cond{padding-left:max(20px,calc((100vw - 1208px)/2));padding-right:max(20px,calc((100vw - 1208px)/2))}}
+.kgrid .k{min-width:0}@media(min-width:760px){.kgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.overview-region-list{margin-top:10px}.overview-region{padding:0 12px}.overview-region .overview-ranks{padding-bottom:12px}.overview-region>summary{min-height:46px}.overview-region>summary b{font-size:14px}
+
+</style>
+
+<div class="top">
+  <div class="titlebar gut" style="padding-left:max(4px, env(safe-area-inset-left,0px));padding-right:max(4px, env(safe-area-inset-right,0px))">
+    <button class="ib" data-rms="drawer" aria-label="報表切換"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <h1>營運總覽</h1>
+    <button class="ib" data-a="sharepage" aria-label="分享整頁"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg></button>
+  </div>
+  <button class="cond gut" data-a="cond" aria-label="修改查詢條件">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <span class="d" id="c-date">2026/11/04（三）</span><span class="t" id="c-rest">｜示意品牌｜4 間門市｜比上週同期</span>
+    <span class="e">修改<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></svg></span>
+  </button>
+</div>
+
+<div class="gut sync">
+  <span id="upd">21:40 更新</span>
+  <button class="chip" data-a="refresh" aria-label="立即更新資料"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>更新</button>
+  <span class="sp"></span>
+  <span id="syncl">每 10 分鐘自動更新</span>
+  <button class="tog" role="switch" aria-checked="true" aria-labelledby="syncl" data-a="sync"></button>
+</div>
+
+<main class="gut" id="main"></main>
+
+<button class="fab" id="fab" data-a="ai" aria-label="問 AI 助理">AI</button>
+<div id="layer"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icon=(paths)=>`<svg class="rms-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+const icons={menu:icon('<path d="M4 7h16M4 12h16M4 17h16"/>'),close:icon('<path d="M6 6l12 12M18 6L6 18"/>'),share:icon('<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8 11l8-5M8 13l8 5"/>')};
+const layer=document.createElement('div');layer.id='rms-global-layer';document.body.append(layer);
+let cfg={},focusBefore=null,overflowBefore='',shareData=null;
+function notify(message){document.getElementById('rms-notice')?.remove();const n=document.createElement('div');n.className='rms-toast';n.id='rms-notice';n.setAttribute('role','status');n.textContent=message;document.body.append(n);setTimeout(()=>n.remove(),3400)}
+function close(){layer.innerHTML='';document.body.style.overflow=overflowBefore;focusBefore?.focus?.();focusBefore=null}
+function show(html){if(!layer.innerHTML){focusBefore=document.activeElement;overflowBefore=document.body.style.overflow}document.body.style.overflow='hidden';layer.innerHTML=html;setTimeout(()=>layer.querySelector('button,input,textarea,a')?.focus(),20)}
+const x=()=>`<button class="rms-close" data-rms="close" aria-label="關閉">${icons.close}</button>`;
+const context=()=>cfg.context?cfg.context():{title:'營運總覽',conditions:'示意資料',summary:'目前資料為操作原型示意。'};
+function drawer(){const c=context(),dash=cfg.dashboardHref,report=typeof cfg.reportHref==='function'?cfg.reportHref():cfg.reportHref;const items=[['營運總覽',dash,'總計、排名與趨勢','dashboard'],['門市營收一覽表',report,'各店比較、逐日趨勢與表格','report'],['時段分析',dash+'#h-h','營運總覽區塊','hours'],['用餐方式分析',dash+'#h-d','營運總覽區塊','dine'],['會員銷售',dash+'#h-m','營運總覽區塊','member'],['商品銷售',dash+'#h-p','營運總覽區塊','products']];show(`<div class="rms-overlay rms-drawer-wrap" data-rms="scrim"><aside class="rms-drawer" role="dialog" aria-modal="true" aria-label="報表切換"><div class="rms-head"><h2>報表切換</h2>${x()}</div><p class="rms-muted">${E(c.conditions)}</p><input id="rms-nav-search" aria-label="搜尋報表" placeholder="搜尋報表"><nav aria-label="報表">${items.map(([name,url,sub,key])=>`<a class="rms-navlink" href="${E(url)}" data-rms="navigate" ${cfg.page===key?'aria-current="page"':''}>${name}<small>${sub}</small></a>`).join('')}</nav></aside></div>`)}
+function ai(){const c=context();show(`<section class="rms-ai" role="dialog" aria-modal="true" aria-label="營運 AI 助理"><header class="rms-ai-header"><span class="rms-ai-label">AI</span><div style="flex:1"><strong>營運 AI 助理</strong><small>${E(c.title)} · ${E(c.conditions)}</small></div>${x()}</header><div class="rms-ai-thread" id="rms-ai-thread" aria-live="polite"><div class="rms-ai-welcome"><h2>想先了解哪個營運重點？</h2><p class="rms-muted">依目前查看的報表與條件，協助整理重點。</p><div class="rms-ai-suggestions">${['目前營業狀況如何？','哪些門市需要留意？','幫我整理一段可分享的重點'].map(s=>`<button data-rms="prompt" data-value="${E(s)}">${s} ↗</button>`).join('')}</div></div></div><div class="rms-ai-compose"><form id="rms-ai-form"><textarea id="rms-ai-input" aria-label="向 AI 提問" placeholder="詢問目前的營運結果…" rows="1" maxlength="500"></textarea><button aria-label="送出問題" type="submit">↑</button></form><p>AI 回覆為原型示意，僅使用畫面中的示意資料。</p></div></section>`)}
+function answer(question){const q=question.trim();if(!q)return;const thread=document.getElementById('rms-ai-thread');thread.querySelector('.rms-ai-welcome')?.remove();const c=context();const response=q.includes('分享')?`可分享的重點\n${c.summary}\n\n資料範圍：${c.conditions}。建議分享時一併保留日期、門市與比較期間。`:q.includes('留意')?`${c.summary}\n\n建議先看門市排名與較前期變化，找到差異後，再切換逐日趨勢；零營收門市需另行確認是否營業。`:`${c.summary}\n\n先以總計判斷整體狀況，再用排名比較門市、以折線確認時間變化。以上為目前報表的示意解讀。`;thread.insertAdjacentHTML('beforeend',`<div class="rms-message user">${E(q)}</div><div class="rms-message assistant">${E(response)}</div>`);document.getElementById('rms-ai-input').value='';thread.scrollTop=thread.scrollHeight}
+function share(data){shareData=data;const c=context();show(`<div class="rms-overlay" data-rms="scrim"><section class="rms-panel" role="dialog" aria-modal="true" aria-label="分享對象"><div class="rms-head"><h2>分享給誰？</h2>${x()}</div><div class="rms-share-info"><span class="rms-share-icon">${icons.share}</span><div><strong>${E(data.title)}</strong><p>${E(data.conditions||c.conditions)}</p></div></div><div class="rms-targets"><button class="rms-target line" data-rms="target" data-value="LINE"><span class="rms-line-badge">LINE</span>LINE · 選擇分享對象</button><button class="rms-target" data-rms="copy">複製連結</button><button class="rms-target" data-rms="target" data-value="其他 App">其他分享對象</button></div><p class="rms-muted" style="font-size:11px;margin:12px 0 0">分享操作為介面示意，不會實際傳送。</p><details class="rms-preview"><summary>預覽圖卡與加上說明</summary><div class="rms-imagecard"><div class="rms-imagehead"><strong>${E(data.title)}</strong>${E(data.conditions||c.conditions)}</div><div class="rms-imagebody">${data.html||`<p>${E(c.summary)}</p>`}</div><div class="rms-image-note" id="rms-note-out" hidden></div></div><label for="rms-note-in">加一句說明</label><textarea id="rms-note-in" placeholder="例如：請留意本週營收變化" maxlength="300"></textarea></details><details class="rms-preview"><summary>下載與其他選項</summary><div class="rms-downloads"><button data-rms="target" data-value="儲存圖卡">儲存圖卡</button><button data-rms="target" data-value="下載 Excel">下載 Excel</button></div></details></section></div>`);layer.querySelectorAll('.rms-imagebody [id]').forEach(el=>el.removeAttribute('id'));layer.querySelectorAll('.rms-imagebody [data-a]').forEach(el=>el.removeAttribute('data-a'))}
+function plot({values,previous,labels,format,selected=null,action=null,actionValues=null,label='趨勢圖'}){const W=600,H=250,L=64,R=18,T=24,B=44;const all=[...values,...(previous||[])].filter(Number.isFinite),min=Math.min(0,...all),max=Math.max(1,...all);const pad=(max-min)*.12,lo=min<0?min-pad:0,hi=max+pad, y=v=>T+(hi-v)/(hi-lo)*(H-T-B),xx=i=>L+i*(W-L-R)/Math.max(1,values.length-1);const path=v=>v.map((v,i)=>`${i?'L':'M'}${xx(i).toFixed(2)},${y(v).toFixed(2)}`).join(' ');return `<svg class="rms-linechart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${E(label)}"><title>${E(label)}</title>${[0,1,2,3].map(i=>{const v=lo+(hi-lo)*i/3;return `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-10}" y="${y(v)+5}" text-anchor="end" fill="var(--muted)" font-size="13">${E(format(v))}</text>`}).join('')}${previous?`<path d="${path(previous)}" fill="none" stroke="#999" stroke-width="2.5" stroke-dasharray="7 6"/>`:''}<path d="${path(values)}" fill="none" stroke="var(--orange)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>${values.map((v,i)=>`<circle cx="${xx(i)}" cy="${y(v)}" r="${i===selected?6:3.5}" fill="${i===selected?'var(--orange-ink)':'var(--orange)'}"/>`).join('')}${labels.map((l,i)=>i===0||i===labels.length-1||labels.length<=7||i%2===0?`<text x="${xx(i)}" y="${H-14}" font-size="13" text-anchor="middle" fill="var(--muted)">${E(l)}</text>`:'').join('')}${action?values.map((v,i)=>`<rect data-a="${E(action)}" data-v="${E(actionValues? actionValues[i]:i)}" x="${xx(i)-18}" y="${T}" width="36" height="${H-T-B}" fill="transparent" role="button" tabindex="0" aria-label="${E(labels[i]+': '+format(v))}" style="cursor:pointer"/>`).join(''):''}</svg>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rms]');if(!b)return;const a=b.dataset.rms;if(a==='close'||a==='scrim'){if(a==='scrim'&&e.target!==b)return;close()}else if(a==='drawer')drawer();else if(a==='ai')ai();else if(a==='prompt')answer(b.dataset.value);else if(a==='target')notify(`已選擇${b.dataset.value}（操作示意，尚未傳送）`);else if(a==='copy')notify('複製連結操作示意：連結將保留報表與目前條件');else if(a==='navigate'){close()}});
+document.addEventListener('input',e=>{if(e.target.id==='rms-nav-search'){const q=e.target.value.trim();layer.querySelectorAll('.rms-navlink').forEach(a=>a.hidden=!a.textContent.includes(q))}if(e.target.id==='rms-note-in'){const o=document.getElementById('rms-note-out');o.textContent=e.target.value;o.hidden=!e.target.value}});
+document.addEventListener('submit',e=>{if(e.target.id==='rms-ai-form'){e.preventDefault();answer(document.getElementById('rms-ai-input').value)}});
+document.addEventListener('keydown',e=>{if(e.target.matches('svg [role="button"]')&&['Enter',' '].includes(e.key)){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}if(!layer.innerHTML)return;if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const f=[...layer.querySelectorAll('button,a,input,textarea,summary')].filter(el=>!el.hidden&&el.getClientRects().length),first=f[0],last=f.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}});
+let previousScroll=0;window.addEventListener('scroll',()=>{const y=window.scrollY;document.querySelector('.rms-fab')?.classList.toggle('hide',y>previousScroll&&y>120);previousScroll=y},{passive:true});
+window.RMSDemo={configure:options=>cfg=options,drawer,ai,share,plot,icons,escape:E,notify};
+})();
+
+</script>
+<script>
+(function(){
+const n0=v=>Math.round(v).toLocaleString('en-US');
+const pct=(a,b)=>(a/b-1)*100;
+const chg=(a,b)=>{const p=pct(a,b);return `<span class="${p<0?'down':'up'}">${p<0?'▼':'▲'} ${Math.abs(p).toFixed(2)}%</span>`};
+const MORE=`<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`;
+const SHARE=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg>`;
+const head=(id,t,sub)=>`<div class="ch"><div class="grow"><h2 id="${id}">${t}</h2>${sub?`<p>${sub}</p>`:''}</div><button class="more" data-a="share" data-k="${id}" data-v="${t}" aria-label="分享「${t}」">${SHARE}</button></div>`;
+const RPT={'h-k':['門市營收一覽表','https://claude.ai/artifact/XZGkAxjmuH1i8nge96WN5L#r-day-book-0-name-cards'],'h-s':['門市營收一覽表','https://claude.ai/artifact/XZGkAxjmuH1i8nge96WN5L#r-day-book-0-name-chart'],'h-h':['時段分析',null],'h-d':['用餐方式分析',null],'h-m':['會員銷售報表（待確認）',null],'h-p':['商品銷售報表',null]};
+const foot=id=>{const [n,u]=RPT[id];return `<div class="go">${['h-k','h-s'].includes(id)?`<a href="${reportURL()}" data-a="reportlink">看完整報表：${n} ›</a>`:`<button data-a="todo" data-v="${n}">看完整報表：${n} ›</button>`}</div>`};
+
+const K={rev:[36767,33151],orders:[34,31],guests:[41,42],avg:[1081,1069],gavg:[897,789]};
+const DINE=[['立客點內用',16358],['內用',12166],['Uber 外送',5313],['外帶',2930]];
+const HRS=[[11,1400],[12,3300],[13,12150],[14,1850],[15,0],[16,0],[17,2950],[18,3300],[19,9900],[20,1917]];
+const STORES=[['內湖店',14827,12050,13,'北部'],['台中建和店',9500,8500,9,'中部'],['台南永康店',8240,8101,8,'南部'],['快閃一號店',4200,4500,4,'未分類']];
+const TOP=[['商業午餐 328',8947],['商業午餐 368',4217],['A 套餐',1933],['蒜味奶油菌菇雞肉手工麵',1820],['義式辣味海鮮墨魚麵',1380],['蒜香辣椒爆蝦佐起司義大利麵',1170],['XO 干貝醬炒鮑魚鮮蝦墨魚麵',1121],['松露牛肝菌野菇雞肉燉飯',1010],['香蒜白酒蛤蜊細麵',950],['手工蕃茄肉醬千層麵',890]];
+const LOW=[['胡麻青花菜',88,43],['洋蔥圈',88,43],['巴薩米哥醋炒野菇',88,43],['耶加雪菲咖啡拿鐵',110,42],['薯條',113,41],['莫札瑞拉起司條',120,40],['蘋果派',130,39],['熱紅茶（示意）',140,38],['檸檬氣泡飲（示意）',150,37],['凱薩沙拉（示意）',160,36]];
+const ZERO=['招牌凱薩雞肉沙拉/兌','大蒜麵包/兌','薯條/兌'];
+const S={prod:'top',showZero:false,hour:null,sync:true,showStores:false};
+const DASHBOARD_FILE='RMS 營運總覽優化版_結論建議.html';
+const REPORT_FILE='門市營收一覽表原型_結論建議.html';
+let Q={date:'today',scope:'selected',compare:'week'};
+try{Q={...Q,...JSON.parse(localStorage.getItem('rms-overview-conclusions-v1')||'{}')}}catch(e){}
+const dates={today:'2026/11/04',yesterday:'2026/11/03',week:'2026/11/02–2026/11/08'};
+const comparisons={week:'上週同期'};Q.compare='week';
+const scopeLabel=()=>Q.scope==='active'?'內湖店':'4 間門市';
+const conditions=()=>`${dates[Q.date]}｜示意品牌｜${scopeLabel()}｜比${comparisons[Q.compare]}`;
+const reportURL=()=>REPORT_FILE+'?from=overview&date='+encodeURIComponent(dates[Q.date])+'&scope='+encodeURIComponent(Q.scope)+'#r-day-book-0-name-chart';
+RMSDemo.configure({page:'dashboard',dashboardHref:DASHBOARD_FILE,reportHref:reportURL,context:()=>({title:'營運總覽',conditions:conditions(),summary:`總營業額 ${n0(K.rev[0])}，比上週同期成長 ${pct(...K.rev).toFixed(1)}%。${Q.scope==='active'?'目前查看內湖店。':'示意門市分布於北、中、南及未分類。'}`})});
+function shareOverview(id,title){const section=document.querySelector(`[aria-labelledby="${id}"]`);const clone=section?.cloneNode(true);clone?.querySelectorAll('.ch,.go,.lnk').forEach(x=>x.remove());RMSDemo.share({title:'營運總覽・'+title,conditions:conditions(),html:clone?.innerHTML||kpi()})}
+function queryOverview(){sheet(`<h3>查詢條件${X}</h3><div class="fl"><label for="q-d">日期</label><select id="q-d">${Object.entries(dates).map(([v,l])=>`<option value="${v}" ${Q.date===v?'selected':''}>${l}</option>`).join('')}</select></div><div class="fl"><label for="q-b">品牌</label><select id="q-b"><option>示意品牌</option></select></div><div class="fl"><label for="q-s">門市範圍</label><select id="q-s"><option value="selected" ${Q.scope!=='active'?'selected':''}>已選 4 間門市</option><option value="active" ${Q.scope==='active'?'selected':''}>內湖店</option></select></div><div class="fl"><label for="q-c">比較基期</label><select id="q-c">${Object.entries(comparisons).map(([v,l])=>`<option value="${v}" ${Q.compare===v?'selected':''}>${l}</option>`).join('')}</select></div><button class="primary" data-a="applycond">搜尋</button><p class="note">搜尋後條件會收合並固定在上方。</p>`)}
+
+
+function kpi(){
+  const r=K.rev;
+  const item=(l,[a,b],f)=>`<div class="k"><div class="l">${l}</div><div class="v">${f(a)}</div><div class="c">${chg(a,b)} <span>前期 ${f(b)}</span></div></div>`;
+  return `<section class="card hero span" aria-labelledby="h-k">${head('h-k','營業額','與上週同期比較')}
+   <div class="v">$${n0(r[0])}</div><div class="row">${chg(r[0],r[1])}<span style="color:var(--muted)">前期 $${n0(r[1])}</span></div>
+   <div class="kgrid">${item('結帳單數',K.orders,n0)}${item('來客數',K.guests,n0)}${item('平均訂單單價',K.avg,v=>'$'+n0(v))}${item('客單價',K.gavg,v=>'$'+n0(v))}</div>${foot('h-k')}</section>`;
+}
+function hours(){
+ const peak=HRS.reduce((a,b)=>a[1]>b[1]?a:b),sel=S.hour==null?peak[0]:S.hour,chosen=HRS.find(h=>h[0]===sel)||peak;
+ return `<section class="card hours" aria-labelledby="h-h">${head('h-h','營業額時段趨勢','看時間變化 · 點折線上的時段查看')}<div class="readout"><span>${chosen[0]}:00</span><b>$${n0(chosen[1])}</b><span style="color:var(--muted)">占全日 ${(chosen[1]/K.rev[0]*100).toFixed(1)}%</span></div>${RMSDemo.plot({values:HRS.map(h=>h[1]),labels:HRS.map(h=>h[0]+':00'),format:v=>v>=1000?'$'+(v/1000).toFixed(1)+'K':'$'+n0(v),selected:HRS.findIndex(h=>h[0]===sel),action:'hour',actionValues:HRS.map(h=>h[0]),label:'11 點到 20 點的營業額時段折線趨勢'})}<div class="rms-insight">尖峰在 ${peak[0]}:00，營業額 $${n0(peak[1])}；15、16 點沒有營業額。</div>${foot('h-h')}</section>`;
+}
+
+function dine(){
+  const tot=DINE.reduce((a,d)=>a+d[1],0), mx=Math.max(...DINE.map(d=>d[1]));
+  return `<section class="card" aria-labelledby="h-d">${head('h-d','用餐方式','依營業額，由高到低')}
+   <div class="bars">${DINE.map(d=>`<div class="hb"><span>${d[0]}</span><span class="track"><i style="width:${(d[1]/mx*100).toFixed(1)}%"></i></span><span class="n">${(d[1]/tot*100).toFixed(1)}%<small>$${n0(d[1])}</small></span></div>`).join('')}</div>${foot('h-d')}</section>`;
+}
+function member(){
+  return `<section class="card" aria-labelledby="h-m">${head('h-m','會員銷售','依營業額')}
+   <div class="stack" aria-hidden="true"><i style="width:0%;background:var(--bar)"></i><i style="width:100%;background:var(--bar-soft)"></i></div>
+   <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><span>會員 <b>0%</b>（$0）</span><span>非會員 <b>100%</b>（$${n0(K.rev[0])}）</span></div>
+   <p class="empty" style="margin:10px 0 0">今天還沒有會員消費</p>${foot('h-m')}</section>`;
+}
+function stores(){
+ const rows=STORES.filter(r=>Q.scope!=='active'||r[0]==='內湖店'),max=Math.max(1,...rows.map(r=>r[1]));
+ const regions=['北部','中部','南部','未分類'];
+ const groups=regions.map(region=>{const subset=rows.filter(r=>r[4]===region).sort((a,b)=>b[1]-a[1]);if(!subset.length)return'';const total=subset.reduce((n,r)=>n+r[1],0);return `<details class="overview-region" open><summary><strong>${region}</strong><span>${subset.length} 間門市</span><b>$${n0(total)}</b></summary><div class="overview-ranks">${subset.map((r,i)=>`<div class="overview-rank"><div><span class="rank-index">${i+1}</span><strong>${r[0]}</strong><b>$${n0(r[1])}</b></div><div class="overview-track"><i style="width:${r[1]/max*100}%"></i></div><small>${chg(r[1],r[2])} · ${n0(r[3])} 筆</small></div>`).join('')}</div></details>`}).join('');
+ return `<section class="card" aria-labelledby="h-s">${head('h-s','門市營業額排名','比較門市高低 · 依區域分段，可展開或收合')}<div class="overview-region-list">${groups}</div>${foot('h-s')}</section>`;
+}
+
+function products(){
+  const top=S.prod==='top';
+  const rows=top?TOP.map((p,i)=>[i+1,p[0],p[1]]):LOW.map(p=>[p[2],p[0],p[1]]);
+  return `<section class="card span" aria-labelledby="h-p">${head('h-p','商品銷售額',`共 46 項商品`)}
+   <div class="seg" role="group" aria-label="排名方向"><button data-a="prod" data-v="top" aria-pressed="${top}">賣最好的 10 項</button><button data-a="prod" data-v="low" aria-pressed="${!top}">賣最少的 10 項</button></div>
+   <div>${rows.map(r=>`<div class="rk"><span class="r">${r[0]}</span><span class="nm">${r[1]}</span><span class="amt">$${n0(r[2])}</span></div>`).join('')}</div>
+   ${top?'':`<p class="note">由少到多排列；同金額的商品並列同一名次。</p><div class="empty" style="margin-top:10px"><span style="flex:1">${ZERO.length} 項今天沒有賣出</span><button class="lnk" data-a="zero" aria-expanded="${S.showZero}">${S.showZero?'收合':'看是哪幾項'}</button></div>${S.showZero?`<p class="note">${ZERO.join('、')}</p>`:''}`}${foot('h-p')}</section>`;
+}
+function changes(){
+  const C=[['條件區','灰色框換兩行；「更新時間」「圖片下載」「數據同步」佔一整列','直角條件列固定在上方，日期優先、比較基期寫在列內；更新時間與自動同步縮成一行小字，下載移到右上角分享'],
+   ['總計指標','5 張大卡各佔一整列，要捲兩個畫面多才看完','營業額放大置頂，其餘 4 項兩欄排列，一個畫面看完；漲跌用 ▲▼ 加文字，不只靠顏色'],
+   ['用餐方式','環圈圖 4 塊，右側標籤被切掉，圖例只有金額沒有占比','由高到低的橫條，同時寫占比與金額'],
+   ['時段分析','15、16 點缺漏時軸被壓縮；紅色虛線 4595.8 沒說明、被切掉；下方縮放滑桿用不到','保留每個時段位置、標出尖峰；虛線標成「平均 $4,596」；點長條直接看數字，拿掉滑桿'],
+   ['會員銷售','100% 非會員的整圈環圈圖，佔一整張卡卻沒有資訊','一條比例條加一句「今天還沒有會員消費」'],
+   ['門市排名','只有 1 間有營業額時，前 10 名和後 10 名列出同一間店','少於 10 間全部列出一次；沒有營業額的店收成一行'],
+   ['商品排名','名稱被「…」截斷；後 10 名由 46 名倒排，3 項金額為 0 混在一起','名稱完整換行；用切換看「賣最好／賣最少」，由少到多；未賣出的商品另外收合'],
+   ['每張卡片','只能整頁下載圖片','右上角直接分享這張卡片（圖卡帶條件、可加說明）；底部「看完整報表 ›」進入對應報表，條件一起帶過去'],
+   ['浮動助理','頭像固定在右下角，蓋住表格數字','縮小成 48px，往下捲時自動藏起來，往上捲再出現']];
+  return `<section class="card span" aria-labelledby="h-c"><details class="changes"><summary id="h-c">這版改了什麼（對照原版）</summary>
+   <table class="ctab"><thead><tr><th style="width:18%">區塊</th><th style="width:38%">原版問題</th><th>這版做法</th></tr></thead><tbody>${C.map(c=>`<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td>${c[2]}</td></tr>`).join('')}</tbody></table></details></section>`;
+}
+const main=document.getElementById('main'), layer=document.getElementById('layer'), toastEl=document.getElementById('toast');
+function render(){main.innerHTML=kpi()+stores()+hours()+dine()+member()+products()+`<p class="foot span">結論建議版 · 總計、用餐方式、時段與商品前 10 名沿用原版數字，其餘為示意資料。</p>`;document.getElementById('c-date').textContent=dates[Q.date];document.getElementById('c-rest').textContent=`示意品牌｜${scopeLabel()}｜比${comparisons[Q.compare]}`;document.querySelector('.cond').setAttribute('aria-label','修改查詢條件：'+conditions())}
+
+let tt;function toast(m){toastEl.textContent=m;toastEl.hidden=false;clearTimeout(tt);tt=setTimeout(()=>toastEl.hidden=true,2200)}
+function sheet(html){layer.innerHTML=`<div class="overlay" data-a="close"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`}
+const X=`<button class="ib" data-a="close" aria-label="關閉" style="width:40px;height:40px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+ if(a==='close'){if(b.classList.contains('overlay')&&e.target!==b)return;layer.innerHTML='';return}
+ if(a==='hour')S.hour=+b.dataset.v;
+ else if(a==='prod')S.prod=b.dataset.v;
+ else if(a==='zero')S.showZero=!S.showZero;
+ else if(a==='stores')S.showStores=!S.showStores;
+ else if(a==='sync'){S.sync=!S.sync;b.setAttribute('aria-checked',S.sync);document.getElementById('syncl').textContent=S.sync?'每 10 分鐘自動更新':'自動更新已關閉';return}
+ else if(a==='refresh'){document.getElementById('upd').textContent='剛剛更新';toast('示意資料已更新');return}
+ else if(a==='share'){shareOverview(b.dataset.k,b.dataset.v);return}
+ else if(a==='sharepage'){RMSDemo.share({title:'營運總覽',conditions:conditions(),html:kpi()+stores()});return}
+ else if(a==='cond'){queryOverview();return}
+ else if(a==='applycond'){Q={date:document.getElementById('q-d').value,scope:document.getElementById('q-s').value,compare:document.getElementById('q-c').value};try{localStorage.setItem('rms-overview-conclusions-v1',JSON.stringify(Q))}catch(e){}layer.innerHTML='';render();toast('搜尋完成，條件已收合置頂（資料為示意）');return}
+ else if(a==='ai'){RMSDemo.ai();return}
+ else if(a==='todo'){sheet(`<h3>${RMSDemo.escape(b.dataset.v)}${X}</h3><p class="note">本原型先呈現此報表的總覽區塊，可由側邊「報表切換」快速查看。</p><button class="primary" data-a="close">返回總覽</button>`);return}
+ else if(a==='reportlink'){try{sessionStorage.setItem('rms-overview-scroll',String(window.scrollY))}catch(e){}return}
+ else if(a==='act'){layer.innerHTML='';toast(b.dataset.v);return}
+ else return;
+ render();
+});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')layer.innerHTML=''});
+document.addEventListener('input',e=>{if(e.target.id==='ni'){const o=document.getElementById('nt');o.textContent=e.target.value;o.hidden=!e.target.value}});
+let lastY=0;const fab=document.getElementById('fab');
+window.addEventListener('scroll',()=>{const y=window.scrollY;fab.classList.toggle('hide',y>lastY&&y>120);lastY=y},{passive:true});
+render();
+if(location.search.includes('restore=1')&&!location.hash){try{requestAnimationFrame(()=>window.scrollTo(0,Number(sessionStorage.getItem('rms-overview-scroll')||0)))}catch(e){}}
+})();
+</script>
+
+</body></html>
