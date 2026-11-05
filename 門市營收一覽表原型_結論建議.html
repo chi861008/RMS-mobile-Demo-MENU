@@ -401,9 +401,10 @@ const GROUPS=['全部',...REGION_NAMES.filter(g=>BASE.some(r=>r.region===g))];
 const DEF={period:'day',dateType:'book',group:'全部',mode:'name',showCode:false,cols:['rev','orders','avg','lwG'],view:'chart',chartMetric:'rev',pageSize:10};
 const KEY='rms-store-report-conclusions-v1';
 function load(){try{const p=JSON.parse(localStorage.getItem(KEY)||'null');return p&&typeof p==='object'?p:null}catch(e){return null}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify({period:S.period,dateType:S.dateType,group:S.group,mode:S.mode,showCode:S.showCode,cols:S.cols,view:S.view,chartMetric:S.chartMetric,pageSize:S.pageSize,queried:S.queried}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({period:S.period,dateType:S.dateType,group:S.group,mode:S.mode,showCode:S.showCode,cols:S.cols,view:S.view,chartMetric:S.chartMetric,trendStore:S.trendStore,pageSize:S.pageSize,queried:S.queried}))}catch(e){}}
 const saved=load();
-const S=Object.assign({},DEF,saved||{},{remembered:!!saved,queried:saved?.queried ?? (!!saved || INCOMING.get('from')==='overview'),qOpen:false,trendStore:'all',trendPoint:6,allRanks:false,filter:'',sort:{k:'rev',dir:-1},page:1,shown:10,sheet:null,share:null});
+const S=Object.assign({},DEF,saved||{},{remembered:!!saved,queried:saved?.queried ?? (!!saved || INCOMING.get('from')==='overview'),qOpen:false,trendPoint:6,allRanks:false,filter:'',sort:{k:'rev',dir:-1},page:1,shown:10,sheet:null,share:null});
+S.trendStore=S.trendStore||'all';
 if(!Array.isArray(S.cols)||!S.cols.length) S.cols=DEF.cols.slice();
 if(!GROUPS.includes(S.group))S.group='全部';
 if(!['name','group'].includes(S.mode))S.mode='name';
@@ -468,16 +469,16 @@ function settingsInline(){
    <label class="ck"><input type="checkbox" data-a="code" ${S.showCode?'checked':''}>門市代碼</label>
    <div class="field"><span class="fl">統計欄位</span><button class="btn" data-a="cols">已選 ${S.cols.length} / ${COLS.length} 欄</button></div></div>`;
 }
-function kpis(rs){const t=sumRows(rs,'總計'),m=S.view==='cards'||S.view==='table'?'rev':S.chartMetric;return `<section class="gut report-summary" aria-label="本次查詢總計"><div class="report-total"><div><span class="hint">本次查詢總計 · ${rs.length} 間門市</span><h2>${COLMAP[m].l}</h2><strong>${shortVal(m,t[m])}</strong></div>${m==='rev'&&t.lw>0?`<div class="report-change ${t.lwG<0?'neg':'pos'}">${t.lwG<0?'▼':'▲'} ${Math.abs(t.lwG*100).toFixed(1)}%<small>比上週同期</small></div>`:''}</div></section>`}
+function kpis(rs){const t=sumRows(rs,'總計'),m=S.chartMetric;return `<section class="gut report-summary" aria-label="本次查詢總計"><div class="report-total"><div><span class="hint">查詢範圍總計 · ${rs.length} 間門市</span><h2>${COLMAP[m].l}</h2><strong>${shortVal(m,t[m])}</strong></div>${m==='rev'&&t.lw>0?`<div class="report-change ${t.lwG<0?'neg':'pos'}">${t.lwG<0?'▼':'▲'} ${Math.abs(t.lwG*100).toFixed(1)}%<small>比上週同期</small></div>`:''}</div></section>`}
 
 function toolbar(){return `<div class="gut report-controls"><div class="seg" role="group" aria-label="呈現方式"><button data-a="view" data-v="chart" aria-pressed="${S.view==='chart'}">排名</button><button data-a="view" data-v="cards" aria-pressed="${S.view==='cards'}">卡片</button><button data-a="view" data-v="trend" aria-pressed="${S.view==='trend'}">趨勢</button><button data-a="view" data-v="table" aria-pressed="${S.view==='table'}">表格</button></div></div>`}
 function displayFields(){return S.view==='table'?`<div class="gut display-fields"><div class="display-field"><span>統計欄位</span><button class="btn" data-a="cols" aria-label="設定統計欄位，目前選擇 ${S.cols.length} 欄">數量：${S.cols.length}</button></div>${S.mode==='name'?`<label class="ck"><input type="checkbox" data-a="code" ${S.showCode?'checked':''}>顯示門市代碼</label>`:''}</div>`:''}
-function displayStage(){return `<section class="display-stage" aria-label="顯示設定"><div class="stage-band gut">顯示設定</div>${toolbar()}<div class="gut display-pickers ${S.view==='table'?'with-columns':''}"><span>${S.view==='table'?'門市顯示':'檢視內容'}</span><div class="report-picker-row">${S.view==='chart'||S.view==='trend'?metricPicker():''}${S.view==='trend'?'':modePicker(S.view!=='table')}</div></div>${displayFields()}</section>`}
+function displayStage(){return `<section class="display-stage" aria-label="顯示設定"><div class="stage-band gut">顯示設定</div><div class="gut display-pickers ${S.view==='table'?'with-columns':''}"><span>檢視指標</span><div class="report-picker-row">${metricPicker()}${S.view==='trend'?'':modePicker()}</div></div>${toolbar()}${displayFields()}</section>`}
 function metricPicker(){return `<button class="report-picker" data-a="metricpicker" aria-haspopup="dialog" aria-label="選取指標，目前為${COLMAP[S.chartMetric].l}">${COLMAP[S.chartMetric].l}<span aria-hidden="true">⌄</span></button>`}
 function modePicker(prefix=true){return `${prefix?'<span class="report-by">按</span>':''}<button class="report-picker secondary" data-a="modepicker" aria-haspopup="dialog" aria-label="選取檢視方式，目前為${S.mode==='group'?'門市群組':'門市'}">${S.mode==='group'?'門市群組':'門市'}<span aria-hidden="true">⌄</span></button>`}
 function groupHeading(g,count,total){return `<div class="group-heading"><strong>${esc(g)}</strong><span>${count} 間門市</span>${total!==undefined?`<b>${shortVal(S.chartMetric,total)}</b>`:''}</div>`}
 function tableView(rs){
- const cols=S.cols.map(k=>COLMAP[k]),label=S.mode==='group'?'門市群組':'門市名稱',span=1+(S.showCode&&S.mode==='name'?1:0)+cols.length;
+ const cols=[S.chartMetric,...S.cols.filter(k=>k!==S.chartMetric)].map(k=>COLMAP[k]),label=S.mode==='group'?'門市群組':'門市名稱',span=1+(S.showCode&&S.mode==='name'?1:0)+cols.length;
  const row=(r,cls='')=>`<tr class="${cls}"><td class="name">${esc(r.name)}${r.count&&S.mode==='group'?` <span class="hint">${r.count} 間</span>`:''}</td>${S.showCode&&S.mode==='name'?`<td class="code">${r.code}</td>`:''}${cols.map(c=>`<td>${cell(c.k,r[c.k])}</td>`).join('')}</tr>`;
  const head=`<tr><th class="name" scope="col">${label}</th>${S.showCode&&S.mode==='name'?'<th class="code" scope="col">代碼</th>':''}${cols.map(c=>`<th scope="col"><button data-a="sort" data-k="${c.k}">${c.l}${IC.sort}</button></th>`).join('')}</tr>`;
  const total=row(sumRows(rs,'總計'),'total');
@@ -493,20 +494,20 @@ function chartView(rs){
  return `<section class="gut report-chart" aria-label="門市排名圖表"><div class="report-chart-heading"><div><h2>門市排名 · ${COLMAP[m].l}</h2><p>${S.mode==='group'?'比較北／中／南門市群組總計':'門市依北／中／南分段，各組內由高到低'}</p></div><button class="ib" data-a="share" aria-label="分享這張排名圖">${RMSDemo.icons.share}</button></div>${content}</section>`;
 }
 function cardsView(rs){
- const card=r=>`<article class="store-card"><div class="store-card-head"><strong>${esc(r.name)}${r.count?` <small class="hint">${r.count} 間</small>`:''}</strong><button class="ib" data-a="share" aria-label="分享${esc(r.name)}卡片">${RMSDemo.icons.share}</button></div><div class="store-card-total"><span>營業額</span><b>$${n0(r.rev)}</b><small class="${r.lwG<0?'neg':'pos'}">${r.lwG<0?'▼':'▲'} ${Math.abs(r.lwG*100).toFixed(1)}%　比上週同期</small></div><div class="store-card-metrics"><div><span>結帳單數</span><b>${n0(r.orders)}</b></div><div><span>平均客單價</span><b>$${n0(r.avg)}</b></div><div><span>作廢金額</span><b>$${n0(r.voidRev)}</b></div></div></article>`;
- const groups=GROUPS.slice(1).map(g=>({name:g,items:sorted(rs.filter(r=>r.group===g),'rev',-1)})).filter(g=>g.items.length);
+ const card=r=>`<article class="store-card"><div class="store-card-head"><strong>${esc(r.name)}${r.count?` <small class="hint">${r.count} 間</small>`:''}</strong><button class="ib" data-a="share" aria-label="分享${esc(r.name)}卡片">${RMSDemo.icons.share}</button></div><div class="store-card-total"><span>${COLMAP[S.chartMetric].l}</span><b>${shortVal(S.chartMetric,r[S.chartMetric])}</b>${S.chartMetric==='rev'?`<small class="${r.lwG<0?'neg':'pos'}">${r.lwG<0?'▼':'▲'} ${Math.abs(r.lwG*100).toFixed(1)}%　比上週同期</small>`:''}</div><div class="store-card-metrics">${['rev','orders','avg','voidRev'].filter(k=>k!==S.chartMetric).slice(0,3).map(k=>`<div><span>${COLMAP[k].l}</span><b>${shortVal(k,r[k])}</b></div>`).join('')}</div></article>`;
+ const groups=GROUPS.slice(1).map(g=>({name:g,items:sorted(rs.filter(r=>r.group===g),S.chartMetric,-1)})).filter(g=>g.items.length);
  const body=S.mode==='group'?'<div class="card-list">'+rankingRows(rs).map(card).join('')+'</div>':groups.map(g=>`<section class="report-group">${groupHeading(g.name,g.items.length)}<div class="card-list">${g.items.map(card).join('')}</div></section>`).join('');
  return `<section class="gut report-chart" aria-label="門市多指標卡片"><div class="report-chart-heading"><div><h2>門市營運卡片</h2><p>${S.mode==='group'?'各門市群組總計':'按北／中／南分段，每店一張卡'}</p></div><button class="ib" data-a="share" aria-label="分享門市卡片">${RMSDemo.icons.share}</button></div>${body}</section>`;
 }
 function trendView(rs){
- const m=S.chartMetric,t=sumRows(rs,S.group==='全部'?'全部門市總計':S.group+'門市總計');
+ const m=S.chartMetric,selected=rs.find(r=>r.code===S.trendStore),t=selected||sumRows(rs,S.group==='全部'?'全部門市總計':S.group+'門市總計');
  const endText=PERIOD[S.period].range.match(/2026\/\d{1,2}\/\d{1,2}/g),end=endText?.at(-1)||'2026/10/18',parts=end.split('/').map(Number),day=new Date(Date.UTC(parts[0],parts[1]-1,parts[2]));
  const labels=Array.from({length:7},(_,i)=>{const d=new Date(day);d.setUTCDate(d.getUTCDate()-6+i);return (d.getUTCMonth()+1)+'/'+d.getUTCDate()});
  const weight=[.78,.93,.88,1.04,.98,1.13,1.08],old=[.84,.87,.94,.96,1.02,.99,1.03],variation=.039;
  const base=m==='lwG'?t.lwG:m==='avg'?t.avg:t[m]/(INCOMING.get('from')==='overview'?1:13);
  const values=weight.map((w,i)=>m==='lwG'?base+(w-1)*.2:Math.max(0,base*(w+Math.sin(i+variation)*.045))),previous=old.map((w,i)=>m==='lwG'?(w-1)*.14:Math.max(0,(m==='avg'?t.avg*.96:m==='rev'?t.lw/(INCOMING.get('from')==='overview'?1:13):base*.93)*w));
  const format=v=>shortVal(m,v),axis=v=>COLMAP[m].t==='pct'||COLMAP[m].t==='growth'?(v*100).toFixed(0)+'%':Math.abs(v)>=1000?(COLMAP[m].t==='int'?'':'$')+(v/1000).toFixed(1)+'K':shortVal(m,v),idx=Math.max(0,Math.min(6,S.trendPoint));
- return `<section class="gut report-chart" aria-label="逐日趨勢圖表"><div class="report-chart-heading"><div><h2>${COLMAP[m].l}逐日趨勢</h2><p>近 7 日 · 示意數據</p></div><button class="ib" data-a="share" aria-label="分享這張趨勢圖">${RMSDemo.icons.share}</button></div><div class="trend-readout"><span>${labels[idx]}</span><strong>${format(values[idx])}</strong><span class="hint">${esc(t.name)}</span></div>${RMSDemo.plot({values,previous,labels,format:axis,selected:idx,action:'trendpoint',label:COLMAP[m].l+'近7日示意趨勢，與上週同期比較'})}<div class="rms-legend"><span><i></i>本期（示意）</span><span><i class="previous"></i>上週同期（示意）</span></div><p class="trend-disclaimer">逐日數值為示意，用於展示趨勢閱讀方式，不代表真實歷史紀錄。</p></section>`;
+ return `<section class="gut report-chart" aria-label="逐日趨勢圖表"><div class="report-chart-heading"><div><h2>${COLMAP[m].l}逐日趨勢</h2><p>近 7 日 · 示意數據</p></div><button class="ib" data-a="share" aria-label="分享這張趨勢圖">${RMSDemo.icons.share}</button></div><label class="trend-store">查看<select data-a="trend-store" aria-label="選擇趨勢門市"><option value="all" ${selected?'':'selected'}>全部門市總計</option>${rs.map(r=>`<option value="${esc(r.code)}" ${selected===r?'selected':''}>${esc(r.name)}</option>`).join('')}</select></label><div class="trend-readout"><span>${labels[idx]}</span><strong>${format(values[idx])}</strong><span class="hint">${esc(t.name)}</span></div>${RMSDemo.plot({values,previous,labels,format:axis,selected:idx,action:'trendpoint',label:COLMAP[m].l+'近7日示意趨勢，與上週同期比較'})}<div class="rms-legend"><span><i></i>本期（示意）</span><span><i class="previous"></i>上週同期（示意）</span></div><p class="trend-disclaimer">上方總計為查詢範圍的${COLMAP[m].l}；此圖可切換全部或單一門市。逐日數值為示意，不代表真實歷史紀錄。</p></section>`;
 }
 
 
@@ -623,6 +624,7 @@ document.addEventListener('change',e=>{
   else if(a==='dsel'){draft[t.dataset.k]=t.value;return}
   else if(a==='desktop-group'){desktopDraft.group=t.value;S.queried=false}
   else if(a==='metric'){S.chartMetric=t.value;S.trendPoint=6;save()}
+  else if(a==='trend-store'){S.trendStore=t.value;S.trendPoint=6;save()}
   else if(a==='dimension'){S.mode=t.value;save()}
   else if(a==='set'){S[t.dataset.k]=t.dataset.v;save()}
   else if(a==='code'){S.showCode=t.checked;save()}
